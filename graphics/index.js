@@ -1,6 +1,7 @@
 import Common from './Common';
 import Output from './Output';
 import Input from './Input';
+import Device from './pure/Device';
 
 export default class {
   constructor({ canvas }) {
@@ -21,6 +22,8 @@ export default class {
 
   render(t) {
     requestAnimationFrame(this.render.bind(this));
+    Device.scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
     Input.render(t);
     Common.render(t);
     this.output.render(t);

@@ -1,12 +1,14 @@
-import { Group } from 'three';
+import { Group, PlaneGeometry, MeshBasicMaterial } from 'three';
 
 import Common from '../Common';
 
-import Floor from './starter/Floor';
-import Cube from './starter/Cube';
+import Instance from './instance';
+
+import Device from '../pure/Device';
 
 export default class {
   Starter = {};
+  $target = null;
 
   constructor() {
     this.init();
@@ -15,8 +17,15 @@ export default class {
   init() {
     this.StarterGroup = new Group();
 
-    this.Starter.floor = new Floor();
-    this.Starter.Cube = new Cube(0, 1.2, 0);
+    // this.Starter.floor = new Floor();
+    this.$target = document.querySelectorAll('.item');
+
+    this.$target.forEach((el, index) => {
+      this.geometryAttribute = el.getAttribute('geometry');
+
+      this.instance = new Instance(this.$target[index], this.geometryAttribute);
+      this.Starter[index] = this.instance;
+    });
 
     Object.keys(this.Starter).forEach((key) => {
       this.StarterGroup.add(this.Starter[key].mesh);
@@ -33,5 +42,9 @@ export default class {
     });
   }
 
-  resize() {}
+  resize(scale) {
+    Object.keys(this.Starter).forEach((key) => {
+      this.Starter[key].resize(scale);
+    });
+  }
 }

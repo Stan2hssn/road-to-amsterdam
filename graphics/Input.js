@@ -17,16 +17,16 @@ class Input {
       this.onDocumentMouseMove.bind(this),
       false,
     );
-    document.addEventListener(
-      'touchstart',
-      this.onDocumentTouchStart.bind(this),
-      { passive: false }, // Mark the listener as non-passive
-    );
-    document.addEventListener(
-      'touchmove',
-      this.onDocumentTouchMove.bind(this),
-      { passive: false }, // Mark the listener as non-passive
-    );
+    // document.addEventListener(
+    //   'touchstart',
+    //   this.onDocumentTouchStart.bind(this),
+    //   { passive: false }, // Mark the listener as non-passive
+    // );
+    // document.addEventListener(
+    //   'touchmove',
+    //   this.onDocumentTouchMove.bind(this),
+    //   { passive: false }, // Mark the listener as non-passive
+    // );
   }
 
   setCoords(x, y) {
