@@ -4,12 +4,13 @@ html {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  overflow: hidden;
+  /* overflow: auto; */
+  height: 100%;
+  /* overflow: hidden; */
 }
 
 body {
   overflow: scroll;
-  scroll-snap-type: y mandatory;
   scrollbar-width: none;
   margin: 0;
   padding: 0;
@@ -27,8 +28,10 @@ body {
 section {
   scroll-snap-align: center;
   display: flex;
-  flex-direction: row;
+  /* flex-direction: column; */
+  /* gap: 2vw; */
   align-items: center;
+  /* justify-content: center; */
   justify-content: space-between;
   height: 100vh;
   z-index: 1;
@@ -39,6 +42,7 @@ section {
   display: flex;
   width: 35vw;
   aspect-ratio: 4/3;
+  border: #fff 1px solid;
 }
 
 h1 {
@@ -48,10 +52,9 @@ h1 {
 }
 
 canvas {
-  display: block;
+  position: fixed;
   top: 0;
   left: 0;
-  position: fixed;
   width: 100svw;
   height: 100svh;
   z-index: -1;

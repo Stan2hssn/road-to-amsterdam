@@ -1,7 +1,7 @@
 import Common from './Common';
 import Powers from './components/Powers';
-import Controls from './helpers/Controls';
 import GridHelper from './helpers/GridHelper';
+import Device from './pure/Device';
 
 export default class {
   component = {};
@@ -40,8 +40,11 @@ export default class {
 
   resize() {
     Object.keys(this.component).forEach((key) => {
-      this.component[key].resize(Common.scale);
-      console.log('Common.scale', Common.scale);
+      this.component[key].resize(
+        Common.scale,
+        Device.viewport.height,
+        Device.viewport.width,
+      );
     });
   }
 }

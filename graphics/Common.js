@@ -16,7 +16,6 @@ class Common {
     // this.scene.background = new Color(this.params.sceneColor);
     this.isCameraFixed = false;
     this.scale = 1;
-    this.scrollTop;
 
     this.camera = new PerspectiveCamera(
       this.params.cameraFov,
@@ -33,6 +32,7 @@ class Common {
     this.cameraZ = 300;
 
     this.camera.position.set(0, 0, this.cameraZ);
+
     this.render = this.render.bind(this);
   }
 
@@ -64,12 +64,11 @@ class Common {
 
   resize() {
     Device.viewport.width = this.renderer.domElement.parentElement.offsetWidth;
-    Device.viewport.height =
-      this.renderer.domElement.parentElement.offsetHeight;
+    Device.viewport.height = this.renderer.domElement.offsetHeight;
 
-    this.camera.position.set(0, -this.scrollTop, this.z);
     this.scale = 1;
 
+    this.camera.position.set(0, -Device.scrollTop, this.z);
     this.camera.aspect = Device.viewport.width / Device.viewport.height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);

@@ -25,6 +25,7 @@ export default class {
 
       this.instance = new Instance(this.$target[index], this.geometryAttribute);
       this.Starter[index] = this.instance;
+      // console.log('position', this.instance.mesh.position);
     });
 
     Object.keys(this.Starter).forEach((key) => {
@@ -42,9 +43,9 @@ export default class {
     });
   }
 
-  resize(scale) {
+  resize(scale, height, width) {
     Object.keys(this.Starter).forEach((key) => {
-      this.Starter[key].resize(scale);
+      this.Starter[key].resize(scale, height, width);
     });
   }
 }

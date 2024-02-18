@@ -1,3 +1,4 @@
+import Device from '../../pure/Device';
 import Box from './instances/Box';
 import Sphere from './instances/Sphere';
 import Torus from './instances/Torus';
@@ -30,24 +31,23 @@ export default class {
 
   dispose() {}
 
-  render(t) {}
+  render(t) {
+    // this.mesh.rotation.x = Math.sin(t / 500);
+    // this.mesh.rotation.y = Math.cos(t / 500);
+  }
 
-  resize(scale) {
+  resize(scale, height, width) {
     const rect = this.$target.getBoundingClientRect();
     this.scale = scale;
+    this.height = height;
+    this.width = width;
 
     this.mesh.scale.set(rect.width * this.scale, rect.height * this.scale, 1.0);
 
     this.mesh.position.set(
-      rect.left + rect.width * 0.5 - window.innerWidth / 2,
-      -rect.top - rect.height / 2 + window.innerHeight / 2,
+      rect.left + rect.width * 0.5 - this.width * 0.5,
+      -rect.top - Device.scrollTop - rect.height * 0.5 + this.height * 0.5,
       0,
-    );
-
-    console.log(
-      this.mesh.position.x,
-      this.mesh.position.y,
-      this.mesh.position.z,
     );
   }
 

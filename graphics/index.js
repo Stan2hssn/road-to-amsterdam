@@ -16,14 +16,19 @@ export default class {
   init() {
     this.resize();
     this.x = this.resize.bind(this);
+    this.scroll = this.scroll.bind(this);
 
+    window.addEventListener('scroll', this.scroll, false);
     window.addEventListener('resize', this.x, false);
+  }
+
+  scroll() {
+    Device.scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
   }
 
   render(t) {
     requestAnimationFrame(this.render.bind(this));
-    Device.scrollTop =
-      document.documentElement.scrollTop || document.body.scrollTop;
     Input.render(t);
     Common.render(t);
     this.output.render(t);
