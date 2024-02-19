@@ -1,1 +1,1 @@
-# Three.js_journey
+# Vanilla-three-boilerplate
