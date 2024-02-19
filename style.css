@@ -1,62 +1,16 @@
-html {
-  background-color: #1e1e1e;
-  color: #000;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  /* overflow: auto; */
-  height: 100%;
-  /* overflow: hidden; */
-}
-
+html,
 body {
-  overflow: scroll;
-  scrollbar-width: none;
+  height: 100svh;
   margin: 0;
   padding: 0;
-  width: 100%;
 }
-
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #fff;
-  width: 100vw;
-  height: 100vh;
+  height: 100%;
 }
-
-section {
-  scroll-snap-align: center;
-  display: flex;
-  /* flex-direction: column; */
-  /* gap: 2vw; */
-  align-items: center;
-  /* justify-content: center; */
-  justify-content: space-between;
-  height: 100vh;
-  z-index: 1;
-  padding: 0 10vw;
-}
-
-.item {
-  display: flex;
-  width: 35vw;
-  aspect-ratio: 4/3;
-  border: #fff 1px solid;
-}
-
-h1 {
-  font-family: system-ui, sans-serif;
-  font-size: 7vw;
-  margin: 0 0;
-}
-
 canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100svw;
-  height: 100svh;
-  z-index: -1;
-  user-select: none;
+  width: 100%;
+  height: 100%;
+  display: block;
 }

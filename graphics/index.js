@@ -1,7 +1,6 @@
 import Common from './Common';
 import Output from './Output';
 import Input from './Input';
-import Device from './pure/Device';
 
 export default class {
   constructor({ canvas }) {
@@ -16,15 +15,8 @@ export default class {
   init() {
     this.resize();
     this.x = this.resize.bind(this);
-    this.scroll = this.scroll.bind(this);
 
-    window.addEventListener('scroll', this.scroll, false);
     window.addEventListener('resize', this.x, false);
-  }
-
-  scroll() {
-    Device.scrollTop =
-      document.documentElement.scrollTop || document.body.scrollTop;
   }
 
   render(t) {

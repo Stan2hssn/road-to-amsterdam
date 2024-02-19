@@ -1,7 +1,16 @@
 import App from './index.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const canvas = document.querySelector('#web_gl');
-  const app = new App({ canvas });
+let app = null;
+
+function onMounted() {
+  const canvas = document.getElementById('web_gl');
+  if (!canvas) {
+    console.error('Canvas element not found');
+    return;
+  }
+
+  app = new App({ canvas }); // Ensure you're passing an object with a canvas property
   app.render();
-});
+}
+
+document.addEventListener('DOMContentLoaded', onMounted, true);

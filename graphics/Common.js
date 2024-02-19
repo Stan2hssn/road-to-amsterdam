@@ -1,21 +1,19 @@
 import Device from './pure/Device.js';
 
-import { Scene, PerspectiveCamera, WebGLRenderer } from 'three';
+import { Scene, Color, PerspectiveCamera, WebGLRenderer } from 'three';
 
 class Common {
   // create a scene and the parameters for the scene
   scene = new Scene();
   params = {
     sceneColor: 0x222222,
-    cameraFov: 70,
+    cameraFov: 50,
     cameraNear: 0.01,
-    cameraFar: 10000.0,
+    cameraFar: 100.0,
   };
 
   constructor() {
-    // this.scene.background = new Color(this.params.sceneColor);
-    this.isCameraFixed = false;
-    this.scale = 1;
+    this.scene.background = new Color(this.params.sceneColor);
 
     this.camera = new PerspectiveCamera(
       this.params.cameraFov,
@@ -24,22 +22,15 @@ class Common {
       this.params.cameraFar,
     );
 
-    this.z =
-      (Device.viewport.height /
-        Math.tan((this.params.cameraFov * Math.PI) / 360)) *
-      0.5;
-
-    this.cameraZ = 300;
-
-    this.camera.position.set(0, 0, this.cameraZ);
-
+    this.camera.position.set(2, 2.0, 9.0);
+    this.camera.lookAt(0, 0, 0);
     this.render = this.render.bind(this);
   }
 
   init({ canvas }) {
     this.renderer = new WebGLRenderer({
       canvas: canvas,
-      alpha: true,
+      alpha: false,
       stencil: false,
       depth: false,
       powerPreference: 'high-performance',
@@ -49,12 +40,9 @@ class Common {
     this.renderer.physicallyCorrectLights = true;
 
     this.renderer.setPixelRatio(Device.pixelRatio);
-
-    this.resize();
   }
 
   render(t) {
-    this.camera.position.set(0, -Device.scrollTop, this.z);
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -64,11 +52,8 @@ class Common {
 
   resize() {
     Device.viewport.width = this.renderer.domElement.parentElement.offsetWidth;
-    Device.viewport.height = this.renderer.domElement.offsetHeight;
-
-    this.scale = 1;
-
-    this.camera.position.set(0, -Device.scrollTop, this.z);
+    Device.viewport.height =
+      this.renderer.domElement.parentElement.clientHeight;
     this.camera.aspect = Device.viewport.width / Device.viewport.height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);
