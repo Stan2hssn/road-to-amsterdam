@@ -32,7 +32,6 @@ class Common {
       canvas: canvas,
       alpha: false,
       stencil: false,
-      depth: false,
       powerPreference: 'high-performance',
       antialias: false,
     });
