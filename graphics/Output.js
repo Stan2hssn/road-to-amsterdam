@@ -1,6 +1,6 @@
-import Powers from './components/Powers';
-import Controls from './helpers/Controls';
-import GridHelper from './helpers/GridHelper';
+import Powers from "./components/Powers";
+import Controls from "./helpers/Controls";
+import GridHelper from "./helpers/GridHelper";
 
 export default class {
   component = {};
@@ -22,7 +22,7 @@ export default class {
     });
 
     Object.keys(this.helpers).forEach((key) => {
-      if (typeof this.helpers[key].render === 'function') {
+      if (typeof this.helpers[key].render === "function") {
         this.helpers[key].render();
       }
     });

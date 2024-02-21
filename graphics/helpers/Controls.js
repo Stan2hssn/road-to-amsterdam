@@ -1,5 +1,5 @@
-import Common from '../Common';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import Common from "../Common";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default class {
   constructor() {

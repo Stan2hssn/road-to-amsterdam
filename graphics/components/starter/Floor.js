@@ -1,4 +1,4 @@
-import { PlaneGeometry, MeshBasicMaterial, Mesh } from 'three';
+import { PlaneGeometry, MeshBasicMaterial, Mesh } from "three";
 
 export default class {
   constructor(posX, posY, posZ) {

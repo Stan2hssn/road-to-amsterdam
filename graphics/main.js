@@ -1,11 +1,11 @@
-import App from './index.js';
+import App from "./index.js";
 
 let app = null;
 
 function onMounted() {
-  const canvas = document.getElementById('web_gl');
+  const canvas = document.getElementById("web_gl");
   if (!canvas) {
-    console.error('Canvas element not found');
+    console.error("Canvas element not found");
     return;
   }
 
@@ -13,4 +13,4 @@ function onMounted() {
   app.render();
 }
 
-document.addEventListener('DOMContentLoaded', onMounted, true);
+document.addEventListener("DOMContentLoaded", onMounted, true);

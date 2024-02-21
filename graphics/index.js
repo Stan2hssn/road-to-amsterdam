@@ -1,6 +1,6 @@
-import Common from './Common';
-import Output from './Output';
-import Input from './Input';
+import Common from "./Common";
+import Output from "./Output";
+import Input from "./Input";
 
 export default class {
   constructor({ canvas }) {
@@ -16,7 +16,7 @@ export default class {
     this.resize();
     this.x = this.resize.bind(this);
 
-    window.addEventListener('resize', this.x, false);
+    window.addEventListener("resize", this.x, false);
   }
 
   render(t) {
@@ -33,7 +33,7 @@ export default class {
   }
 
   destroy() {
-    window.removeEventListener('resize', this.x);
+    window.removeEventListener("resize", this.x);
 
     Input.dispose();
     Common.dispose();

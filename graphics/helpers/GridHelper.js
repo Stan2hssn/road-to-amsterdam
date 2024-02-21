@@ -1,5 +1,5 @@
-import { GridHelper } from 'three';
-import Common from '../Common';
+import { GridHelper } from "three";
+import Common from "../Common";
 
 export default class {
   constructor(size, divisions) {

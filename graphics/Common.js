@@ -1,6 +1,6 @@
-import Device from './pure/Device.js';
+import Device from "./pure/Device.js";
 
-import { Scene, Color, PerspectiveCamera, WebGLRenderer } from 'three';
+import { Scene, Color, PerspectiveCamera, WebGLRenderer } from "three";
 
 class Common {
   // create a scene and the parameters for the scene
@@ -32,7 +32,7 @@ class Common {
       canvas: canvas,
       alpha: false,
       stencil: false,
-      powerPreference: 'high-performance',
+      powerPreference: "high-performance",
       antialias: false,
     });
 

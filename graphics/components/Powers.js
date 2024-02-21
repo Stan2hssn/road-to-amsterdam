@@ -1,9 +1,9 @@
-import { Group } from 'three';
+import { Group } from "three";
 
-import Common from '../Common';
+import Common from "../Common";
 
-import Floor from './starter/Floor';
-import Cube from './starter/Cube';
+import Floor from "./starter/Floor";
+import Cube from "./starter/Cube";
 
 export default class {
   Starter = {};

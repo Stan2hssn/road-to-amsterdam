@@ -1,5 +1,5 @@
-import Device from './pure/Device';
-import { Vector2 } from 'three';
+import Device from "./pure/Device";
+import { Vector2 } from "three";
 
 class Input {
   constructor() {
@@ -13,17 +13,17 @@ class Input {
 
   init() {
     document.addEventListener(
-      'mousemove',
+      "mousemove",
       this.onDocumentMouseMove.bind(this),
       false,
     );
     document.addEventListener(
-      'touchstart',
+      "touchstart",
       this.onDocumentTouchStart.bind(this),
       { passive: false }, // Mark the listener as non-passive
     );
     document.addEventListener(
-      'touchmove',
+      "touchmove",
       this.onDocumentTouchMove.bind(this),
       { passive: false }, // Mark the listener as non-passive
     );

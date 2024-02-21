@@ -1,6 +1,6 @@
-import { BoxGeometry, Mesh, MeshMatcapMaterial, TextureLoader } from 'three';
+import { BoxGeometry, Mesh, MeshMatcapMaterial, TextureLoader } from "three";
 
-import Texture from '../../../public/Texture/texture.png';
+import Texture from "/Texture/texture.png";
 
 export default class {
   constructor(posX, posY, posZ) {
