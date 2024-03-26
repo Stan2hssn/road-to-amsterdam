@@ -1,8 +1,22 @@
-import { BoxGeometry, Mesh, MeshMatcapMaterial, TextureLoader } from "three";
+import {
+  BoxGeometry,
+  Mesh,
+  MeshMatcapMaterial,
+  ShaderMaterial,
+  TextureLoader,
+  Uniform,
+} from "three";
 
 import Texture from "/Texture/texture.png";
 
+import vertexShader from "../glsl/vertex.glsl";
+import fragmentShader from "../glsl/fragment.glsl";
+
 export default class {
+  params = {
+    basic: 0,
+  };
+
   constructor(posX, posY, posZ) {
     this.loader = new TextureLoader();
 
@@ -15,7 +29,16 @@ export default class {
   init(posX = 0, posY = 0, posZ = 0) {
     this.geometry = new BoxGeometry(1, 1, 1);
 
-    this.material = new MeshMatcapMaterial();
+    const { basic } = this.params;
+
+    this.material = new ShaderMaterial({
+      uniforms: {
+        uTime: new Uniform(0),
+        default: new Uniform(basic),
+      },
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+    });
     this.material.matcap = this.textures.matcap;
 
     this.mesh = new Mesh(this.geometry, this.material);
@@ -29,6 +52,8 @@ export default class {
   }
 
   render(t) {
+    this.mesh.material.uniforms.uTime.value = t / 60;
+
     this.mesh.rotation.x = Math.sin(t / 500);
     this.mesh.rotation.y = Math.cos(t / 500);
   }
