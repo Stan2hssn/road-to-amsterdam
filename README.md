@@ -1,1 +1,1 @@
-# Vanilla-three-boilerplate
+# road-to-amsterdam webgl template
