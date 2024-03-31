@@ -1,13 +1,23 @@
 import Device from "./pure/Device.js";
 
-import { Scene, Color, PerspectiveCamera, WebGLRenderer } from "three";
+import {
+  Scene,
+  Color,
+  PerspectiveCamera,
+  WebGLRenderer,
+  NearestFilter,
+  FloatType,
+  WebGLRenderTarget,
+  RGBAFormat,
+  OrthographicCamera,
+} from "three";
 
 class Common {
   // create a scene and the parameters for the scene
   scene = new Scene();
   params = {
     sceneColor: 0x222222,
-    cameraFov: 50,
+    cameraFov: 70,
     cameraNear: 0.01,
     cameraFar: 100.0,
   };
@@ -22,7 +32,7 @@ class Common {
       this.params.cameraFar,
     );
 
-    this.camera.position.set(2, 2.0, 9.0);
+    this.camera.position.set(0, 0, 2.0);
     this.camera.lookAt(0, 0, 0);
     this.render = this.render.bind(this);
   }
@@ -36,14 +46,40 @@ class Common {
       antialias: false,
     });
 
-    this.renderer.physicallyCorrectLights = true;
-
     this.renderer.setPixelRatio(Device.pixelRatio);
+
+    this.setupFBO();
   }
 
-  render(t) {
-    this.renderer.render(this.scene, this.camera);
+  getRenderTarget() {
+    const renderTarget = new WebGLRenderTarget(
+      Device.viewport.width,
+      Device.viewport.height,
+      {
+        minFilter: NearestFilter,
+        magFilter: NearestFilter,
+        format: RGBAFormat,
+        type: FloatType,
+      },
+    );
+
+    return renderTarget;
   }
+
+  setupFBO() {
+    this.fbo = this.getRenderTarget();
+    this.fbo1 = this.getRenderTarget();
+
+    this.fboScene = new Scene();
+    this.fboScene.background = new Color(this.params.sceneColor);
+
+    this.fboCamera = new OrthographicCamera(-1, 1, 1, -1, -1, 1);
+
+    this.fboCamera.position.set(0, 0, 0.5);
+    this.fboCamera.lookAt(0, 0, 0);
+  }
+
+  render(t) {}
 
   dispose() {
     this.renderer.dispose();

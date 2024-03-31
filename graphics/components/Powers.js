@@ -2,34 +2,34 @@ import { Group } from "three";
 
 import Common from "../Common";
 
-import Floor from "./starter/Floor";
-import Cube from "./starter/Cube";
+import Points from "./particles/index.js";
+// import Cube from "./Points/Cube";
 
 export default class {
-  Starter = {};
+  Points = {};
 
   constructor() {
     this.init();
   }
 
   init() {
-    this.StarterGroup = new Group();
+    this.PointsGroup = new Group();
 
-    this.Starter.floor = new Floor();
-    this.Starter.Cube = new Cube(0, 1.2, 0);
+    this.Points.points = new Points();
+    // this.Points.Cube = new Cube(0, 1.2, 0);
 
-    Object.keys(this.Starter).forEach((key) => {
-      this.StarterGroup.add(this.Starter[key].mesh);
+    Object.keys(this.Points).forEach((key) => {
+      this.PointsGroup.add(this.Points[key].instance);
     });
 
-    Common.scene.add(this.StarterGroup);
+    Common.scene.add(this.PointsGroup);
   }
 
   dispose() {}
 
   render(t) {
-    Object.keys(this.Starter).forEach((key) => {
-      this.Starter[key].render(t);
+    Object.keys(this.Points).forEach((key) => {
+      this.Points[key].render(t);
     });
   }
 
