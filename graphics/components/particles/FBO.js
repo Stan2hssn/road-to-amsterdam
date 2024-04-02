@@ -35,6 +35,7 @@ export default class {
       },
       vertexShader: vertexParticles,
       fragmentShader: fragmentParticles,
+      transparent: true,
     });
 
     const geometry = new BufferGeometry();

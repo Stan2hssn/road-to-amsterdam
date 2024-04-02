@@ -17,6 +17,7 @@ class Common {
   scene = new Scene();
   params = {
     sceneColor: 0x222222,
+    // sceneColor: 0x000,
     cameraFov: 70,
     cameraNear: 0.01,
     cameraFar: 100.0,
@@ -32,7 +33,7 @@ class Common {
       this.params.cameraFar,
     );
 
-    this.camera.position.set(0, 0, 2.0);
+    this.camera.position.set(0, 0, 5.0);
     this.camera.lookAt(0, 0, 0);
     this.render = this.render.bind(this);
   }
