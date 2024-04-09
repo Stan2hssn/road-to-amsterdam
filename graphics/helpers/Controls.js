@@ -10,6 +10,7 @@ export default class {
 
   init() {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.target.set(0, 0, 0);
   }
 
   render() {

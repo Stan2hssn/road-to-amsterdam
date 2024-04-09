@@ -2,36 +2,45 @@ import { Group } from "three";
 
 import Common from "../Common";
 
-import Floor from "./starter/Floor";
-import Cube from "./starter/Cube";
+import Instance from "./instances/index";
 
 export default class {
-  Starter = {};
-
+  Instances = {};
   constructor() {
+    const $target = null;
     this.init();
   }
 
   init() {
-    this.StarterGroup = new Group();
+    this.InstancesGroup = new Group();
 
-    this.Starter.floor = new Floor();
-    this.Starter.Cube = new Cube(0, 1.2, 0);
+    this.$target = document.querySelectorAll(".object");
 
-    Object.keys(this.Starter).forEach((key) => {
-      this.StarterGroup.add(this.Starter[key].mesh);
+    this.$target.forEach((el, index) => {
+      const geometryAttribut = el.getAttribute("geometry");
+
+      this.instance = new Instance(this.$target[index], geometryAttribut);
+      this.Instances[index] = this.instance;
     });
 
-    Common.scene.add(this.StarterGroup);
+    Object.keys(this.Instances).forEach((_) => {
+      this.InstancesGroup.add(this.Instances[_].mesh);
+    });
+
+    Common.scene.add(this.InstancesGroup);
   }
 
   dispose() {}
 
   render(t) {
-    Object.keys(this.Starter).forEach((key) => {
-      this.Starter[key].render(t);
+    Object.keys(this.Instances).forEach((key) => {
+      this.Instances[key].render(t);
     });
   }
 
-  resize() {}
+  resize(scale, height, width) {
+    Object.keys(this.Instances).forEach((key) => {
+      this.Instances[key].resize(scale, height, width);
+    });
+  }
 }

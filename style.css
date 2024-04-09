@@ -1,8 +1,11 @@
 html,
 body {
+  position: relative;
   height: 100svh;
   margin: 0;
   padding: 0;
+  overscroll-behavior: none;
+  overflow: hidden;
 }
 #app {
   -webkit-font-smoothing: antialiased;
@@ -10,7 +13,32 @@ body {
   height: 100%;
 }
 canvas {
+  display: block;
+  position: absolute;
   width: 100%;
   height: 100%;
-  display: block;
+}
+
+.scrollContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.container {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.object {
+  width: 40vw;
+  aspect-ratio: 16/9;
+  border: 2px solid white;
 }

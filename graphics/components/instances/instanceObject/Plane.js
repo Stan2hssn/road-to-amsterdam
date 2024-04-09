@@ -1,13 +1,10 @@
 import {
-  BoxGeometry,
   Mesh,
-  MeshMatcapMaterial,
+  PlaneGeometry,
   ShaderMaterial,
   TextureLoader,
   Uniform,
 } from "three";
-
-import Texture from "/Texture/texture.png";
 
 import vertexShader from "../glsl/vertex.glsl";
 import fragmentShader from "../glsl/fragment.glsl";
@@ -17,17 +14,12 @@ export default class {
     basic: 0,
   };
 
-  constructor(posX, posY, posZ) {
-    this.loader = new TextureLoader();
-
-    this.textures = {
-      matcap: this.loader.load(Texture),
-    };
-    this.init(posX, posY, posZ);
+  constructor() {
+    this.init();
   }
 
-  init(posX = 0, posY = 0, posZ = 0) {
-    this.geometry = new BoxGeometry(1, 1, 1);
+  init() {
+    this.geometry = new PlaneGeometry(1, 1, 16, 16);
 
     const { basic } = this.params;
 
@@ -38,12 +30,10 @@ export default class {
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
+      // wireframe: true,
     });
-    this.material.matcap = this.textures.matcap;
 
     this.mesh = new Mesh(this.geometry, this.material);
-
-    this.mesh.position.set(posX, posY, posZ);
   }
 
   dispose() {
@@ -53,9 +43,6 @@ export default class {
 
   render(t) {
     this.mesh.material.uniforms.uTime.value = t / 60;
-
-    this.mesh.rotation.x = Math.sin(t / 500);
-    this.mesh.rotation.y = Math.cos(t / 500);
   }
 
   resize() {}

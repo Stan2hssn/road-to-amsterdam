@@ -3,8 +3,8 @@ import Common from "../Common";
 
 export default class {
   constructor(size, divisions) {
-    size = size || 10;
-    divisions = divisions || 10;
+    this.size = size || 100;
+    this.divisions = divisions || 100;
 
     this.init();
   }
@@ -15,6 +15,8 @@ export default class {
       s.material.opacity = 0.25;
       s.material.transparent = true;
     });
+
+    this.gridHelper.rotateX(Math.PI / 2);
 
     Common.scene.add(this.gridHelper);
   }

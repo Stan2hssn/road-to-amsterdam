@@ -7,13 +7,24 @@ class Common {
   scene = new Scene();
   params = {
     sceneColor: 0x222222,
-    cameraFov: 50,
+    cameraFov: 52,
     cameraNear: 0.01,
-    cameraFar: 100.0,
+    cameraFar: 10000.0,
   };
 
   constructor() {
     this.scene.background = new Color(this.params.sceneColor);
+
+    this.scale = 1;
+
+    this.cameraX = 0;
+    this.cameraY = 0;
+    this.cameraZ =
+      (Device.viewport.height /
+        Math.tan((this.params.cameraFov * Math.PI) / 360)) *
+      0.5;
+
+    this.z = 300;
 
     this.camera = new PerspectiveCamera(
       this.params.cameraFov,
@@ -22,12 +33,11 @@ class Common {
       this.params.cameraFar,
     );
 
-    this.camera.position.set(2, 2.0, 9.0);
-    this.camera.lookAt(0, 0, 0);
     this.render = this.render.bind(this);
   }
 
-  init({ canvas }) {
+  init({ canvas, scrollContainer }) {
+    this.scrollContainer = scrollContainer;
     this.renderer = new WebGLRenderer({
       canvas: canvas,
       alpha: false,
@@ -42,6 +52,11 @@ class Common {
   }
 
   render(t) {
+    this.cameraY = -Device.scrollTop;
+
+    this.scrollContainer.style.transform = `translate3d(0, ${-Device.scrollTop}px, 0)`;
+    this.camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
+
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -52,7 +67,15 @@ class Common {
   resize() {
     Device.viewport.width = this.renderer.domElement.parentElement.offsetWidth;
     Device.viewport.height =
-      this.renderer.domElement.parentElement.clientHeight;
+      this.renderer.domElement.parentElement.offsetHeight;
+
+    this.cameraZ =
+      (Device.viewport.height /
+        Math.tan((this.params.cameraFov * Math.PI) / 360)) *
+      0.5;
+
+    this.camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
+
     this.camera.aspect = Device.viewport.width / Device.viewport.height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);

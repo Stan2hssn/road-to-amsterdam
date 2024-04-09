@@ -1,11 +1,12 @@
 import Common from "./Common";
 import Output from "./Output";
 import Input from "./Input";
+import Device from "./pure/Device";
 
 export default class {
-  constructor({ canvas }) {
+  constructor({ canvas, scrollContainer }) {
     Input.init();
-    Common.init({ canvas });
+    Common.init({ canvas, scrollContainer });
 
     this.output = new Output();
 

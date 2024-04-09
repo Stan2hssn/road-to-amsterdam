@@ -1,6 +1,8 @@
 import Device from "./pure/Device";
 import { Vector2 } from "three";
 
+import gsap from "gsap";
+
 class Input {
   constructor() {
     this.coords = new Vector2();
@@ -8,6 +10,9 @@ class Input {
     this.prevCoords = new Vector2();
     this.delta = new Vector2();
     this.timer = null;
+    this.scroll = 0;
+    this.previousScroll = 0;
+    this.currentScroll = 0;
     this.count = 0;
   }
 
@@ -27,6 +32,8 @@ class Input {
       this.onDocumentTouchMove.bind(this),
       { passive: false }, // Mark the listener as non-passive
     );
+
+    document.addEventListener("wheel", this.onScroll.bind(this), false);
   }
 
   setCoords(x, y) {
@@ -57,6 +64,23 @@ class Input {
       event.preventDefault();
       this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
     }
+  }
+
+  onScroll(event) {
+    console.log("scrolling");
+    this.currentScroll = event.deltaY;
+
+    this.scroll = this.currentScroll + this.previousScroll;
+
+    // gsap.to(Device, {
+    //   scrollTop: (this.scroll / 150).toFixed(3),
+    //   duration: 0.8,
+    //   ease: "power1.out",
+    // });
+
+    Device.scrollTop = (this.scroll / 2).toFixed(3);
+
+    this.previousScroll = this.scroll;
   }
 
   render() {
