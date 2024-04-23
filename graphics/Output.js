@@ -48,4 +48,10 @@ export default class {
       );
     });
   }
+
+  setDebug() {
+    Object.keys(this.component).forEach((key) => {
+      this.component[key].setDebug(Common.debug);
+    });
+  }
 }

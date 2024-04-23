@@ -1,8 +1,6 @@
 import Device from "../../pure/Device";
 import Plane from "./instanceObject/Plane";
 
-import Common from "../../Common";
-
 export default class {
   constructor($target, geometry) {
     this.$target = $target;
@@ -54,5 +52,7 @@ export default class {
     );
   }
 
-  setDebug(debug) {}
+  setDebug(debug) {
+    this.instance.setDebug(debug);
+  }
 }

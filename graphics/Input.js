@@ -14,26 +14,58 @@ class Input {
     this.previousScroll = 0;
     this.currentScroll = 0;
     this.count = 0;
+    this.velocity = 0;
+
+    this.onMouseMoveBound = this.onDocumentMouseMove.bind(this);
+    this.onTouchStartBound = this.onDocumentTouchStart.bind(this);
+    this.onTouchMoveBound = this.onDocumentTouchMove.bind(this);
+    this.onScrollBound = this.onScroll.bind(this);
   }
 
   init() {
-    document.addEventListener(
-      "mousemove",
-      this.onDocumentMouseMove.bind(this),
-      false,
-    );
-    document.addEventListener(
-      "touchstart",
-      this.onDocumentTouchStart.bind(this),
-      { passive: false }, // Mark the listener as non-passive
-    );
-    document.addEventListener(
-      "touchmove",
-      this.onDocumentTouchMove.bind(this),
-      { passive: false }, // Mark the listener as non-passive
-    );
+    this.xTo = gsap.quickTo(this, "velocity", {
+      duration: 0.2,
+      ease: "power1.out",
+    });
 
-    document.addEventListener("wheel", this.onScroll.bind(this), false);
+    document.addEventListener("mousemove", this.onMouseMoveBound, false);
+    document.addEventListener("touchstart", this.onTouchStartBound, {
+      passive: false,
+    });
+    document.addEventListener("touchmove", this.onTouchMoveBound, {
+      passive: false,
+    });
+    document.addEventListener("wheel", this.onScrollBound, false);
+  }
+
+  onScroll(event) {
+    clearTimeout(this.timer);
+    this.currentScroll = event.deltaY;
+    this.xTo(this.currentScroll / 6000);
+    this.scroll += this.currentScroll;
+    Device.scrollTop = (this.scroll / 2).toFixed(3);
+    this.previousScroll = this.scroll;
+    Device.velocity = -this.velocity;
+
+    this.timer = setTimeout(() => {
+      this.xTo(0);
+
+      gsap.to(Device, {
+        duration: 0.5,
+        velocity: 0,
+        onUpdate: () => {
+          Device.velocity = -this.velocity;
+        },
+      });
+    }, 30);
+  }
+
+  render() {
+    this.delta.subVectors(this.coords, this.prevCoords);
+    this.prevCoords.copy(this.coords);
+
+    if (this.prevCoords.x === 0 && this.prevCoords.y === 0)
+      this.delta.set(0, 0);
   }
 
   setCoords(x, y) {
@@ -66,32 +98,12 @@ class Input {
     }
   }
 
-  onScroll(event) {
-    console.log("scrolling");
-    this.currentScroll = event.deltaY;
-
-    this.scroll = this.currentScroll + this.previousScroll;
-
-    // gsap.to(Device, {
-    //   scrollTop: (this.scroll / 150).toFixed(3),
-    //   duration: 0.8,
-    //   ease: "power1.out",
-    // });
-
-    Device.scrollTop = (this.scroll / 2).toFixed(3);
-
-    this.previousScroll = this.scroll;
+  dispose() {
+    document.removeEventListener("mousemove", this.onMouseMoveBound);
+    document.removeEventListener("touchstart", this.onTouchStartBound);
+    document.removeEventListener("touchmove", this.onTouchMoveBound);
+    document.removeEventListener("wheel", this.onScrollBound);
   }
-
-  render() {
-    this.delta.subVectors(this.coords, this.prevCoords);
-    this.prevCoords.copy(this.coords);
-
-    if (this.prevCoords.x === 0 && this.prevCoords.y === 0)
-      this.delta.set(0, 0);
-  }
-
-  dispose() {}
 
   resize() {}
 }

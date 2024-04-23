@@ -1,7 +1,18 @@
+attribute vec3 planeIndex;
+attribute vec3 planesNumber;
+
+uniform float uTime;
+uniform float uSpeed;
+uniform float uInfluence;
+
+varying vec2 vUv;
+
+#define PI 3.14159265359
+
 void main() {
+    vec3 pos = position;
+    pos.y = pos.y + sin((planeIndex.x / planesNumber.x) * PI / 4.) * uSpeed * 20. * uInfluence;
 
-    vec4 vertexPos = modelMatrix * vec4(position, 1.0);
-    vec4 viewPosition = viewMatrix * vertexPos;
-
-    gl_Position = projectionMatrix * viewPosition;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    vUv = uv;
 }

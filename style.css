@@ -23,7 +23,7 @@ canvas {
   position: relative;
   width: 100%;
   height: 100%;
-  -webkit-overflow-scrolling: touch;
+  /* -webkit-overflow-scrolling: touch; */
 }
 
 .container {
@@ -38,7 +38,13 @@ canvas {
 }
 
 .object {
-  width: 40vw;
+  width: 70vw;
   aspect-ratio: 16/9;
-  border: 2px solid white;
+  /* border: 2px solid white; */
+}
+
+@media screen and (min-width: 868px) {
+  .object {
+    width: 50vw;
+  }
 }

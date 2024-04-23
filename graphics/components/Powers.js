@@ -43,4 +43,10 @@ export default class {
       this.Instances[key].resize(scale, height, width);
     });
   }
+
+  setDebug(debug) {
+    Object.keys(this.Instances).forEach((key) => {
+      this.Instances[key].setDebug(debug);
+    });
+  }
 }
