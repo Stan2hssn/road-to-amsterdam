@@ -6,6 +6,7 @@ export default class {
   constructor({ canvas }) {
     Input.init();
     Common.init({ canvas });
+    Common.setupFBO();
 
     this.output = new Output();
 
@@ -13,6 +14,9 @@ export default class {
   }
 
   init() {
+    Common.setDebug();
+    this.output.setDebug();
+
     this.resize();
     this.x = this.resize.bind(this);
 

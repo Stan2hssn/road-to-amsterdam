@@ -2,6 +2,8 @@ import Powers from "./components/Powers";
 import Controls from "./helpers/Controls";
 import GridHelper from "./helpers/GridHelper";
 
+import Common from "./Common";
+
 export default class {
   component = {};
   helpers = {};
@@ -13,7 +15,7 @@ export default class {
   init() {
     this.component.powers = new Powers();
     this.helpers.controls = new Controls();
-    this.helpers.grid = new GridHelper(10, 10);
+    // this.helpers.grid = new GridHelper(500, 100);
   }
 
   render(t) {
@@ -40,6 +42,12 @@ export default class {
   resize() {
     Object.keys(this.component).forEach((key) => {
       this.component[key].resize();
+    });
+  }
+
+  setDebug(debug) {
+    Object.keys(this.component).forEach((key) => {
+      this.component[key].setDebug(Common.debug);
     });
   }
 }

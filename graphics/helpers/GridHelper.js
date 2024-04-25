@@ -3,8 +3,8 @@ import Common from "../Common";
 
 export default class {
   constructor(size, divisions) {
-    size = size || 10;
-    divisions = divisions || 10;
+    this.size = size || 100;
+    this.divisions = divisions || 100;
 
     this.init();
   }
