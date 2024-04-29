@@ -19,7 +19,7 @@ import simulationFragment from "./simulation/glsl/fragment.glsl";
 export default class {
   params = {
     width: 0.02,
-    height: 0.5,
+    height: 1,
     w: 0.5,
     z: 0.02,
     xLength: 150,
