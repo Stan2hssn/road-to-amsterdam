@@ -13,7 +13,7 @@ class Common {
   // create a scene and the parameters for the scene
   scene = new Scene();
   params = {
-    sceneColor: 0x222222,
+    sceneColor: 0x95b7be,
     cameraFov: 50,
     cameraNear: 0.01,
     cameraFar: 100.0,
@@ -29,7 +29,7 @@ class Common {
       this.params.cameraFar,
     );
 
-    this.camera.position.set(0, 2.0, 10.0);
+    this.camera.position.set(0, 2, 5.0);
     this.camera.lookAt(0, 0, 0);
     this.render = this.render.bind(this);
   }
@@ -59,7 +59,7 @@ class Common {
       alpha: false,
       stencil: false,
       powerPreference: "high-performance",
-      antialias: false,
+      antialias: true,
     });
 
     this.renderer.physicallyCorrectLights = true;
