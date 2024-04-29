@@ -119,12 +119,11 @@ void main() {
     // mvPosition.x *= 1. - mvPosition.y + .5;
 
     mvPosition.xyz += instancedPosition;
+    mvPosition.y /= instancedScale.y * 1.5;
     mvPosition.x /= norm.x;
 
-    mvPosition.y /= instancedScale.y;
     mvPosition.xyz = mvPosition.xyz * instancedScale;
-    mvPosition.xyzw += simplexNoiseDerivatives((mvPosition.xyzw) + uTime * .1) * (mvPosition.y) * .08;
-
+    mvPosition.xyzw += simplexNoiseDerivatives((mvPosition.xyzw * 1.5) + uTime * .1) * (mvPosition.y) * .08;
     // // mvPosition.xyz = mvPosition.xyz / uNorm;
     // mvPosition.y *= abs(mvPosition.z - 1.);
 
