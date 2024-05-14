@@ -1,4 +1,7 @@
 import Device from "./pure/Device";
+
+import gsap from "gsap";
+
 import { Vector2 } from "three";
 
 class Input {
@@ -9,9 +12,27 @@ class Input {
     this.delta = new Vector2();
     this.timer = null;
     this.count = 0;
+    this.scroll = 0;
+    this.currentScroll = 0;
+    this.previousScroll = 0;
+    this.scroll = 0;
   }
 
   init() {
+    this.xTo = gsap.quickTo(this.coords, "x", {
+      duration: 0.4,
+      ease: "power2.out",
+    });
+
+    this.yTo = gsap.quickTo(this.coords, "y", {
+      duration: 0.4,
+      ease: "power2.out",
+    });
+
+    document.addEventListener("wheel", this.onScroll.bind(this), {
+      passive: false,
+    });
+
     document.addEventListener(
       "mousemove",
       this.onDocumentMouseMove.bind(this),
@@ -29,12 +50,20 @@ class Input {
     );
   }
 
+  onScroll(event) {
+    this.currentScroll = event.deltaY * 0.004;
+    this.scroll += this.currentScroll;
+
+    Device.scrollTop = (-this.scroll / 2).toFixed(4);
+    this.previousScroll = this.currentScroll;
+  }
+
   setCoords(x, y) {
     if (this.timer) clearTimeout(this.timer);
-    this.coords.set(
-      (x / Device.viewport.width) * 2 - 1,
-      -(y / Device.viewport.height) * 2 + 1,
-    );
+
+    this.xTo((x / Device.viewport.width) * 2 - 1);
+    this.yTo(-(y / Device.viewport.height) * 2 + 1);
+
     this.mouseMoved = true;
     this.timer = setTimeout(() => {
       this.mouseMoved = false;

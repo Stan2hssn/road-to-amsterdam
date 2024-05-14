@@ -21,4 +21,5 @@ export default defineConfig({
       root: "/", // Directory for root imports
     }),
   ],
+  assetsInclude: ["**/*.glb"],
 });

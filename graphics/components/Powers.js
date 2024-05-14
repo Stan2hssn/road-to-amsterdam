@@ -1,35 +1,38 @@
-import { Group } from "three";
-
 import Common from "../Common";
+import ProjectRender from "./ProjectRender";
 
-import Floor from "./starter/Floor";
-import Cube from "./starter/Cube";
-
-export default class {
-  Starter = {};
+export default class ModelLoader {
+  Project = {};
 
   constructor() {
     this.init();
   }
 
-  init() {
-    this.StarterGroup = new Group();
+  getProject() {
+    const projects = document.querySelectorAll(".project");
 
-    this.Starter.floor = new Floor();
-    this.Starter.Cube = new Cube(0, 1.2, 0);
-
-    Object.keys(this.Starter).forEach((key) => {
-      this.StarterGroup.add(this.Starter[key].mesh);
+    projects.forEach((project) => {
+      this.Project[project.id] = project;
     });
+  }
 
-    Common.scene.add(this.StarterGroup);
+  init() {
+    this.getProject();
+
+    if (!this.Project[0]) return;
+
+    Object.keys(this.Project).forEach((_) => {
+      const id = this.Project[_].id;
+
+      this.Project[_] = new ProjectRender(id);
+    });
   }
 
   dispose() {}
 
   render(t) {
-    Object.keys(this.Starter).forEach((key) => {
-      this.Starter[key].render(t);
+    Object.keys(this.Project).forEach((_) => {
+      this.Project[_].render(t);
     });
   }
 
