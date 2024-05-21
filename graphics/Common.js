@@ -9,64 +9,96 @@ import {
   OrthographicCamera,
   WebGLRenderTarget,
   RGBAFormat,
-  NearestFilter,
+  LinearFilter,
 } from "three";
 
 class Common {
   // create a scene and the parameters for the scene
+  Project = {};
+
   scene = new Scene();
   params = {
     sceneColor: 0xffffff,
-    cameraFov: 50,
+    cameraFov: 20,
     cameraNear: 0.01,
     cameraFar: 100.0,
   };
 
   constructor() {
+    this.step = 20; // this is the distance between the projects;
     // this.renderTexture = null;
   }
 
-  getRenderTarget({ canvas }) {
-    this.scene.background = new Color(this.params.sceneColor);
+  getProject() {
+    const projects = document.querySelectorAll(".project");
 
-    this.camera = new PerspectiveCamera(
+    projects.forEach((project) => {
+      if (!projects) return;
+
+      this.Project[project.id] = {};
+      this.Project[project.id].id = project.id;
+      this.Project[project.id].model = project.getAttribute("model");
+      this.Project[project.id].size = project.getAttribute("size");
+      this.Project[project.id].translate = project.getAttribute("translate");
+      this.Project[project.id].camera = this.getCamera();
+      this.Project[project.id].renderTexture = this.getRenderTexture();
+      this.Project[project.id].renderTarget = this.getRenderTarget();
+    });
+
+    this.renderScene = this.getScene();
+  }
+
+  getScene() {
+    const scene = new Scene();
+    scene.background = new Color(this.params.sceneColor);
+    return scene;
+  }
+
+  getCamera() {
+    const camera = new PerspectiveCamera(
       this.params.cameraFov,
       Device.viewport.width / Device.viewport.height,
       this.params.cameraNear,
       this.params.cameraFar,
     );
 
-    this.camera.position.set(0, 0.0, 2.2);
-    this.camera.lookAt(0, 0, 0);
+    camera.position.set(0, 0.0, 9);
+    camera.lookAt(0, 0, 0);
 
-    // this.render = this.render.bind(this);
-    this.renderTexture = null;
+    return camera;
+  }
 
-    this.renderTarget = new WebGLRenderTarget(
+  getRenderTexture() {
+    const renderTexture = null;
+
+    return renderTexture;
+  }
+
+  getRenderTarget() {
+    const renderTarget = new WebGLRenderTarget(
       Device.viewport.width * Device.pixelRatio,
-      Device.viewport.height * Device.pixelRatio,
+      Device.viewport.height,
       {
         format: RGBAFormat,
-        minFilter: NearestFilter,
-        magFilter: NearestFilter,
+        minFilter: LinearFilter,
+        magFilter: LinearFilter,
+        anisotropy: 1,
       },
     );
+
+    return renderTarget;
   }
 
   getFinalRender({ canvas }) {
     this.mainScene = new Scene();
     this.mainScene.background = new Color(0x000000);
 
-    this.mainCamera = new OrthographicCamera(
-      -1 * this.camera.aspect,
-      1 * this.camera.aspect,
-      1,
-      -1,
-      0,
+    this.mainCamera = new PerspectiveCamera(
+      50,
+      Device.viewport.width / Device.viewport.height,
+      0.01,
       100,
     );
-
-    this.mainCamera.position.z = 2;
   }
 
   init({ canvas }) {
@@ -87,16 +119,28 @@ class Common {
 
   render(t) {
     const { x, y } = Input.coords;
-    this.mainCamera.position.set(x / 8, y / 8 - Device.scrollTop, 0);
 
-    this.camera.position.set(Device.scrollTop - x / 4, -y / 4, 2.2);
+    this.mainCamera.position.set(x / 8, y / 8 - -Device.scrollTop, 3);
 
-    this.renderer.setRenderTarget(this.renderTarget);
-    this.renderTexture = this.renderTarget.texture;
-    this.renderer.render(this.scene, this.camera);
+    for (const project in this.Project) {
+      const scrollAtenuation = (this.step * project) / (this.step / 2);
 
+      this.Project[project].camera.position.set(
+        this.step * project - -Device.scrollTop + scrollAtenuation - x / 4,
+        // scrollAtenuation - x / 4 + this.step * project,
+        -y / 4,
+        this.Project[project].camera.position.z,
+      );
+
+      this.Project[project].camera.updateProjectionMatrix();
+
+      this.renderer.setRenderTarget(this.Project[project].renderTarget);
+      this.Project[project].renderTexture =
+        this.Project[project].renderTarget.texture;
+
+      this.renderer.render(this.renderScene, this.Project[project].camera);
+    }
     this.renderer.setRenderTarget(null);
-
     this.renderer.render(this.mainScene, this.mainCamera);
   }
 
@@ -109,23 +153,12 @@ class Common {
     Device.viewport.height =
       this.renderer.domElement.parentElement.clientHeight;
 
-    Device.pixelRatio =
-      Math.min(Device.viewport.width / Device.viewport.height, 2) > 2.0
-        ? Device.viewport.height / Device.viewport.width
-        : Device.viewport.width / Device.viewport.height;
+    Device.pixelRatio = Math.min(window.devicePixelRatio, 2);
 
-    this.camera.aspect = Device.pixelRatio;
+    this.aspect = Device.viewport.width / Device.viewport.height;
 
-    this.mainCamera.left = -1 * this.camera.aspect;
-    this.mainCamera.right = 1 * this.camera.aspect;
-
-    this.camera.updateProjectionMatrix();
+    this.mainCamera.aspect = this.aspect;
     this.mainCamera.updateProjectionMatrix();
-
-    this.renderTarget.setSize(
-      Device.viewport.width * Device.pixelRatio,
-      Device.viewport.height,
-    );
 
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);
     this.renderer.setPixelRatio(Device.pixelRatio);
