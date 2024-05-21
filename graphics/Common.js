@@ -43,6 +43,7 @@ class Common {
       this.Project[project.id].camera = this.getCamera();
       this.Project[project.id].renderTexture = this.getRenderTexture();
       this.Project[project.id].renderTarget = this.getRenderTarget();
+      this.Project[project.id].instance = {};
     });
 
     this.renderScene = this.getScene();

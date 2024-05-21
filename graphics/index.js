@@ -23,6 +23,7 @@ export default class {
     requestAnimationFrame(this.render.bind(this));
     Input.render(t);
     Common.render(t);
+
     this.output.render(t);
   }
 
