@@ -1,12 +1,20 @@
 import Device from "./pure/Device.js";
 
-import { Scene, Color, PerspectiveCamera, WebGLRenderer } from "three";
+import {
+  Scene,
+  Color,
+  PerspectiveCamera,
+  WebGLRenderer,
+  WebGLRenderTarget,
+  LinearFilter,
+  RGBAFormat,
+} from "three";
 
 class Common {
   // create a scene and the parameters for the scene
   scene = new Scene();
   params = {
-    sceneColor: 0x222222,
+    sceneColor: 0xdfdbd1,
     cameraFov: 50,
     cameraNear: 0.01,
     cameraFar: 100.0,
@@ -14,17 +22,32 @@ class Common {
 
   constructor() {
     this.scene.background = new Color(this.params.sceneColor);
+  }
 
-    this.camera = new PerspectiveCamera(
+  getCamera() {
+    const camera = new PerspectiveCamera(
       this.params.cameraFov,
       Device.viewport.width / Device.viewport.height,
       this.params.cameraNear,
       this.params.cameraFar,
     );
 
-    this.camera.position.set(2, 2.0, 9.0);
-    this.camera.lookAt(0, 0, 0);
-    this.render = this.render.bind(this);
+    camera.position.set(0, 1.5, 10.0);
+    camera.lookAt(0, 1.5, 0);
+
+    return camera;
+  }
+
+  setupFbo() {
+    this.fbo = new WebGLRenderTarget(
+      Device.viewport.width,
+      Device.viewport.height,
+    );
+
+    this.fboScene = new Scene();
+    this.fboScene.background = new Color(this.params.sceneColor);
+
+    this.fboCamera = this.getCamera();
   }
 
   init({ canvas }) {
@@ -39,11 +62,12 @@ class Common {
     this.renderer.physicallyCorrectLights = true;
 
     this.renderer.setPixelRatio(Device.pixelRatio);
+
+    this.camera = this.getCamera();
+    this.setupFbo();
   }
 
-  render(t) {
-    this.renderer.render(this.scene, this.camera);
-  }
+  render(t) {}
 
   dispose() {
     this.renderer.dispose();

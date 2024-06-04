@@ -1,4 +1,15 @@
-import { Group } from "three";
+import {
+  Group,
+  Mesh,
+  SphereGeometry,
+  MeshMatcapMaterial,
+  MeshStandardMaterial,
+  MeshBasicMaterial,
+  TextureLoader,
+} from "three";
+
+import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 
 import Common from "../Common";
 
@@ -15,8 +26,41 @@ export default class {
   init() {
     this.StarterGroup = new Group();
 
-    this.Starter.floor = new Floor();
-    this.Starter.Cube = new Cube(0, 1.2, 0);
+    // this.Starter.floor = new Floor();
+    this.Starter.Cube = new Cube(0, 2, 0);
+    // this.dummy = new Mesh(
+    //   new SphereGeometry(1, 32, 32),
+    //   new MeshBasicMaterial({ color: 0xff0000 }),
+    // );
+
+    const loader = new FontLoader();
+
+    loader.load(
+      "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
+      function (font) {
+        const dummy = new TextGeometry("C S", {
+          font: font,
+          size: 80,
+          depth: 0.05,
+          curveSegments: 12,
+          bevelEnabled: true,
+          bevelThickness: 1,
+          bevelSize: 8,
+          bevelOffset: 0,
+          bevelSegments: 5,
+        });
+
+        const dummyMesh = new Mesh(
+          dummy,
+          new MeshBasicMaterial({ color: 0xffffff }),
+        );
+
+        dummyMesh.scale.set(0.014, 0.014, 0.014);
+        dummyMesh.position.set(-1.2, 2, 0);
+
+        Common.scene.add(dummyMesh);
+      },
+    );
 
     Object.keys(this.Starter).forEach((key) => {
       this.StarterGroup.add(this.Starter[key].mesh);
