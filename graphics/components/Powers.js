@@ -66,7 +66,7 @@ export default class {
     );
 
     Object.keys(this.Starter).forEach((key) => {
-      this.StarterGroup.add(this.Starter[key].mesh);
+      // this.StarterGroup.add(this.Starter[key].mesh);
     });
 
     Common.scene.add(this.StarterGroup);

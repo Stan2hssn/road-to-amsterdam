@@ -32,7 +32,7 @@ class Common {
       this.params.cameraFar,
     );
 
-    camera.position.set(0, 0, 10.0);
+    camera.position.set(0, 0, 15.0);
     camera.lookAt(0, 1.5, 0);
 
     return camera;

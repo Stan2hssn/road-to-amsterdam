@@ -26,11 +26,12 @@ void main() {
     vec3 mag = texture2D(magTexture, uvMap).xyz;
     vec3 noise = texture2D(noiseTexture, uvMap * uvNoise).xyz;
     // noise = texture2D(noiseTexture, uvMap).xyz;
+
     vec3 frosted = texture2D(frostedTexture, uvMap).xyz;
 
-    vec3 normalGrain = (frosted * 1. - noise);
+    vec3 normalGrain = (frosted * 1. - (noise));
 
-    vec3 normal = (worldNormal) * normalGrain * 3.;
+    vec3 normal = (worldNormal) * (normalGrain * 3.) * 3.;
 
     float iorRatioRed = 1.0 / ior.r;
     float iorRatioGreen = 1.0 / ior.g;
@@ -46,16 +47,22 @@ void main() {
     float G = texture2D(uTexture, ((uv * 1.5) * (uvNoise - .3)) + refractVecG.xy).g;
     float B = texture2D(uTexture, ((uv * 1.5) * (uvNoise - .3)) + refractVecB.xy).b;
 
-    vec3 colorTest = texture2D(uTexture, uv + refractVecR.xy).rgb;
+    vec4 colorTest = texture2D(uTexture, uv);
 
-    color.r = mix(R, 1., .5);
-    color.g = mix(G, 1., .5);
-    color.b = mix(B, 1., .5);
+    // color.r = mix(R, 1., .2);
+    // color.g = mix(G, 1., .2);
+    // color.b = mix(B, 1., .2);
+
+    color = vec4(vec3(R, G, B), 1.);
+
+    color = LinearTosRGB(color);
+    vec4 test = LinearTosRGB(colorTest);
 
     // gl_FragColor = vec4(gain, 1.);
-    gl_FragColor = vec4((refractVecR.rgb), 1.);
     gl_FragColor = vec4(vec3(color.r + .1, color.g + .1, color.b), 1.);
     gl_FragColor = vec4(vec3((uv * 1.4) * (uvNoise - .3), 1.), 1.);
-    // gl_FragColor = vec4(vec3(uv, 1.), 1.);
+    gl_FragColor = vec4(vec3(uv, 1.), 1.);
+    // gl_FragColor = vec4((test), 1.);
+    gl_FragColor = test;
     gl_FragColor = color;
 }
