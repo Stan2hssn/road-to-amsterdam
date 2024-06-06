@@ -17,6 +17,9 @@ import {
 import rugged from "/Texture/normal/rugged.webp";
 import gain from "/Texture/normal/gain_2.jpeg";
 import mag from "/Texture/mag.webp";
+import noise from "/Texture/noise_light.jpg";
+import noise_cache from "/Texture/noise_cache.webp";
+import frosted from "/Texture/veronoi_texture.png";
 
 import vertexShader from "../glsl/vertex.glsl";
 import fragmentShader from "../glsl/fragment.glsl";
@@ -36,6 +39,9 @@ export default class {
       normal: this.loader.load(rugged),
       gain: this.loader.load(gain),
       mag: this.loader.load(mag),
+      noise: this.loader.load(noise),
+      noise_cache: this.loader.load(noise_cache),
+      frosted: this.loader.load(frosted),
     };
 
     this.init(posX, posY, posZ);
@@ -65,7 +71,10 @@ export default class {
         normalTexture: new Uniform(this.textures.normal),
         gainTexture: new Uniform(this.textures.gain),
         magTexture: new Uniform(this.textures.mag),
-        uIor: new Uniform(new Vector3(1.15, 1.16, 1.18)),
+        uIor: new Uniform(new Vector3(1.14, 1.16, 1.2)),
+        noiseTexture: new Uniform(this.textures.noise),
+        noiseCache: new Uniform(this.textures.noise_cache),
+        frostedTexture: new Uniform(this.textures.frosted),
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
@@ -83,7 +92,7 @@ export default class {
   }
 
   render(t) {
-    this.mesh.rotation.y = t * 0.001;
+    this.mesh.rotation.y = t * 0.0001;
 
     this.mesh.visible = false;
     Common.renderer.setRenderTarget(Common.fbo);

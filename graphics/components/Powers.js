@@ -6,6 +6,7 @@ import {
   MeshStandardMaterial,
   MeshBasicMaterial,
   TextureLoader,
+  PlaneGeometry,
 } from "three";
 
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
@@ -15,6 +16,7 @@ import Common from "../Common";
 
 import Floor from "./starter/Floor";
 import Cube from "./starter/Cube";
+import { materialEmissive } from "three/examples/jsm/nodes/Nodes.js";
 
 export default class {
   Starter = {};
@@ -27,7 +29,8 @@ export default class {
     this.StarterGroup = new Group();
 
     // this.Starter.floor = new Floor();
-    this.Starter.Cube = new Cube(0, 2, 0);
+
+    this.Starter.Cube = new Cube(0, 0, 0);
     // this.dummy = new Mesh(
     //   new SphereGeometry(1, 32, 32),
     //   new MeshBasicMaterial({ color: 0xff0000 }),
@@ -52,11 +55,11 @@ export default class {
 
         const dummyMesh = new Mesh(
           dummy,
-          new MeshBasicMaterial({ color: 0xffffff }),
+          new MeshBasicMaterial({ color: 0xf2f1ed }),
         );
 
         dummyMesh.scale.set(0.014, 0.014, 0.014);
-        dummyMesh.position.set(-1.2, 2, 0);
+        dummyMesh.position.set(-1.2, -0.5, 0);
 
         Common.scene.add(dummyMesh);
       },
