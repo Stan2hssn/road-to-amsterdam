@@ -16,6 +16,6 @@ export default class {
       s.material.transparent = true;
     });
 
-    Common.mainScene.add(this.gridHelper);
+    Common.scene.add(this.gridHelper);
   }
 }

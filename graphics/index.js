@@ -16,6 +16,9 @@ export default class {
     this.resize();
     this.x = this.resize.bind(this);
 
+    Common.debug();
+    this.output.debug(Common.pane);
+
     window.addEventListener("resize", this.x, false);
   }
 

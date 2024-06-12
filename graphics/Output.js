@@ -14,9 +14,9 @@ export default class {
 
   init() {
     this.component.powers = new Powers();
-    // this.helpers.controls = new Controls();
+    this.helpers.controls = new Controls();
     // this.processing.postProcessing = new postProcessing();
-    // this.helpers.grid = new GridHelper(10, 10);
+    this.helpers.grid = new GridHelper(10, 10);
   }
 
   render(t) {
@@ -55,6 +55,12 @@ export default class {
 
     Object.keys(this.processing).forEach((key) => {
       this.processing[key].resize();
+    });
+  }
+
+  debug(debug) {
+    Object.keys(this.component).forEach((key) => {
+      this.component[key].debug(debug);
     });
   }
 }

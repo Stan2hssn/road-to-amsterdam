@@ -29,9 +29,9 @@ class Input {
       ease: "power2.out",
     });
 
-    document.addEventListener("wheel", this.onScroll.bind(this), {
-      passive: false,
-    });
+    // document.addEventListener("wheel", this.onScroll.bind(this), {
+    //   passive: false,
+    // });
 
     document.addEventListener(
       "mousemove",
