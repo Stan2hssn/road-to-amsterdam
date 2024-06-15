@@ -20,7 +20,7 @@ class Common {
 
   scene = new Scene();
   params = {
-    sceneColor: 0xffffff,
+    sceneColor: 0xf2f1ed,
     cameraFov: 20,
     cameraNear: 0.01,
     cameraFar: 100.0,
@@ -36,10 +36,10 @@ class Common {
       50,
       Device.viewport.width / Device.viewport.height,
       0.01,
-      1000,
+      10000,
     );
 
-    this.camera.position.set(0, 4, 8);
+    this.camera.position.set(0, 25, 25);
 
     this.renderer = new WebGLRenderer({
       canvas: canvas,

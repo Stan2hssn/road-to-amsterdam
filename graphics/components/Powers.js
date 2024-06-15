@@ -8,35 +8,45 @@ import {
   Group,
   InstancedMesh,
   InstancedBufferAttribute,
+  MeshBasicMaterial,
+  Uniform,
+  Color,
 } from "three";
 
+import gsap from "gsap";
+
+import CustomEase from "gsap/CustomEase";
 import ModelLoader from "./ModelLoader";
 
-import ring0 from "/Models/ring_0.glb";
-import ring1 from "/Models/ring_1.glb";
-import ring2 from "/Models/ring_2.glb";
-import ring3 from "/Models/ring_3.glb";
+import ring from "/Models/anneau.glb";
 
 import vertexModel from "./glsl/vertexModel.glsl";
 import fragmentModel from "./glsl/fragmentModel.glsl";
 
 import Common from "../Common";
 import Device from "../pure/Device";
-import { log } from "three/examples/jsm/nodes/Nodes.js";
+import cnoise from "./extends/cnoise";
 
 export default class Powers {
-  Ring = {
-    0: ring0,
-    1: ring1,
-    2: ring2,
-    3: ring3,
-  };
+  Ring = ring;
 
   FirstRing = {};
 
+  Scale = {
+    0: 1,
+    1: 10,
+    2: 100,
+  };
+
   params = {
     position: { x: 0, y: 0, z: 0 },
-    factor: 0,
+    size: 10,
+    factor: 1,
+    length: 10,
+    background: new Color(Common.params.sceneColor),
+    primary: new Color(0x010446),
+    secondary: new Color(0x9592b3),
+    greyFilter: new Color(0.22, 0.19, 0.0),
   };
 
   constructor() {
@@ -44,28 +54,18 @@ export default class Powers {
   }
 
   init() {
-    this.setMaterial();
-    this.setModel(1);
-    this.setModel(10);
-    this.setModel(100);
+    gsap.registerPlugin(CustomEase);
+    // this.setMaterial();
+    this.setModel(this.Scale[0]);
+    this.setModel(this.Scale[1]);
+    this.setModel(this.Scale[2]);
   }
 
   setModel(scale) {
-    this.instances = Object.keys(this.Ring).length;
-
-    this.firstGroup = new Group();
+    this.group = new Group();
 
     this.FirstRing.xs = new ModelLoader(
-      this.Ring[0],
-      0,
-      0,
-      0,
-      scale,
-      scale,
-      scale,
-    );
-    this.FirstRing.md = new ModelLoader(
-      this.Ring[1],
+      this.Ring,
       0,
       0,
       0,
@@ -74,90 +74,87 @@ export default class Powers {
       scale,
     );
 
-    this.FirstRing.lg = new ModelLoader(
-      this.Ring[2],
-      0,
-      0,
-      0,
-      scale,
-      scale,
-      scale,
-    );
-
-    this.FirstRing.xl = new ModelLoader(
-      this.Ring[3],
-      0,
-      0,
-      0,
-      scale,
-      scale,
-      scale,
-    );
-
-    let positions = [];
-    let instanceCount = 0;
-
-    Object.keys(this.FirstRing).forEach((key) => {
-      this.FirstRing[key].load().then((gltfScene) => {
-        gltfScene.traverse((child) => {
-          if (child.isMesh) {
-            this.geometry = child.geometry;
-
-            this.mesh = new Mesh(this.geometry, this.material);
-            positions.push(
-              child.position.x,
-              child.position.y,
-              child.position.z,
-            );
-
-            const instancedPosition = new Float32Array(positions);
-
-            this.mesh.geometry.setAttribute(
-              "instancedPosition",
-              new InstancedBufferAttribute(instancedPosition, 3),
-            );
-
-            this.mesh.position.set(
-              child.position.x,
-              child.position.y,
-              child.position.z,
-            );
-
-            this.firstGroup.add(this.mesh);
-          }
+    this.FirstRing.xs.load().then((gltfScene) => {
+      gltfScene.children.forEach((cell, i) => {
+        this.material = new ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0 },
+            uTexture: {
+              value: new TextureLoader().load("/Models/ring_0.png"),
+            },
+            uPosition: {
+              value: new Vector3(
+                cell.position.x,
+                cell.position.y,
+                cell.position.z,
+              ),
+            },
+            uModelPosition: {
+              value: new Vector3(
+                gltfScene.position.x,
+                gltfScene.position.y,
+                gltfScene.position.z,
+              ),
+            },
+            uResolution: { value: new Vector2(Device.width, Device.height) },
+            uFactor: { value: 0.0 },
+            uId: new Uniform(),
+            uPrimary: { value: this.params.primary },
+            uSecondary: { value: this.params.secondary },
+            uBackground: { value: this.params.background },
+            uGrey: { value: this.params.greyFilter },
+          },
+          vertexShader: vertexModel,
+          fragmentShader: fragmentModel,
         });
 
-        Common.scene.add(this.firstGroup);
+        cell.material = this.material;
       });
-    });
-  }
 
-  setMaterial() {
-    const { position } = this.params;
+      var tl = gsap.timeline({ repeat: -1 });
 
-    this.material = new ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uTransformed: {
-          value: new Vector3(position.x, position.y, position.z),
-        },
-        uTexture: {
-          value: new TextureLoader().load("/Models/ring_0.png"),
-        },
-        uPosition: { value: new Vector3(0, 0, 0) },
-        uResolution: { value: new Vector2(Device.width, Device.height) },
-        uFactor: { value: 0.0 },
-      },
-      vertexShader: vertexModel,
-      fragmentShader: fragmentModel,
+      tl.to(this.params, {
+        size: 0.98,
+        duration: 4,
+        ease: CustomEase.create("custom", "M0,0 C0.18,0.411 0.299,0.791 1,1 "),
+      });
+
+      this.group.add(gltfScene);
     });
+
+    Common.scene.add(this.group);
   }
 
   dispose() {}
 
   render(t) {
     t /= 1000;
-    this.material.uniforms.uTime.value = t;
+
+    this.group.children.forEach((_, i) => {
+      _.children.forEach((cell, j) => {
+        cell.material.uniforms.uTime.value = this.params.size;
+        cell.material.uniforms.uPosition.value = new Vector3(
+          (cell.position.x / _.children.length) * this.Scale[i],
+          (cell.position.y / _.children.length) * this.Scale[i],
+          (cell.position.z / _.children.length) * this.Scale[i],
+        );
+        cell.material.uniforms.uId.value = i / _.children.length;
+        cell.material.uniforms.uFactor.value = this.params.factor;
+        cell.material.uniforms.uModelPosition.value = new Vector3(
+          _.position.x,
+          _.position.y,
+          _.position.z,
+        );
+      });
+
+      _.scale.set(
+        this.Scale[i] * this.params.size,
+        1,
+        this.Scale[i] * this.params.size,
+      );
+
+      // _.scale.set(this.Scale[i] * as, 1, this.Scale[i] * as);
+    });
   }
 
   resize() {}
@@ -181,10 +178,31 @@ export default class Powers {
     debug
       .addBinding(this.params, "factor", {
         min: 0,
-        max: 1,
+        max: 10,
       })
       .on("change", (v) => {
         this.material.uniforms.uFactor.value = this.params.factor;
       });
+
+    debug.addBinding(this.params, "greyFilter", {
+      min: 0,
+      max: 1,
+      color: { type: "float" },
+    });
+    debug.addBinding(this.params, "primary", {
+      min: 0,
+      max: 1,
+      color: { type: "float" },
+    });
+    debug.addBinding(this.params, "secondary", {
+      min: 0,
+      max: 1,
+      color: { type: "float" },
+    });
+    debug.addBinding(this.params, "background", {
+      min: 0,
+      max: 1,
+      color: { type: "float" },
+    });
   }
 }

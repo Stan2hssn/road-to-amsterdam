@@ -42,6 +42,7 @@ export default class ModelLoader {
           );
 
           this.children = [...gltf.scene.children];
+
           resolve(gltf.scene);
         },
         undefined,
