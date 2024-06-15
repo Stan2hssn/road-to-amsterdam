@@ -20,7 +20,7 @@ void main() {
     vTop = (pos * 3.8 - 15.1);
 
     float dist = 1. - length((uPosition.xz) * (uTime / 10.));
-    float norm = smoothstep(0.99, 1., pow(dist, 2.));
+    float norm = smoothstep(0.991, 1., pow(dist, 2.)) * 1.1;
 
     pos.y -= 4. + ((norm * 7.) - (uId + 2.));
     vGradient = pos * .1 + .5;

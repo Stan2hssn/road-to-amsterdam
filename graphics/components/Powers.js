@@ -26,6 +26,7 @@ import fragmentModel from "./glsl/fragmentModel.glsl";
 import Common from "../Common";
 import Device from "../pure/Device";
 import cnoise from "./extends/cnoise";
+import Input from "../Input";
 
 export default class Powers {
   Ring = ring;
@@ -53,12 +54,45 @@ export default class Powers {
     this.init();
   }
 
+  ease(t) {
+    function bezier(t, p0, p1, p2, p3) {
+      const cX = 3 * (p1.x - p0.x);
+      const bX = 3 * (p2.x - p1.x) - cX;
+      const aX = p3.x - p0.x - cX - bX;
+
+      const cY = 3 * (p1.y - p0.y);
+      const bY = 3 * (p2.y - p1.y) - cY;
+      const aY = p3.y - p0.y - cY - bY;
+
+      const x = aX * t * t * t + bX * t * t + cX * t + p0.x;
+      const y = aY * t * t * t + bY * t * t + cY * t + p0.y;
+
+      return y;
+    }
+
+    return (
+      1 -
+      bezier(
+        t,
+        { x: 0, y: 0 },
+        { x: 0, y: 0.8 },
+        { x: 0.299, y: 0.891 },
+        { x: 1, y: 1 },
+      )
+    );
+  }
+
+  clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
   init() {
     gsap.registerPlugin(CustomEase);
+
     // this.setMaterial();
     this.setModel(this.Scale[0]);
     this.setModel(this.Scale[1]);
     this.setModel(this.Scale[2]);
+
+    console.log("tl", this.tl);
   }
 
   setModel(scale) {
@@ -110,15 +144,6 @@ export default class Powers {
 
         cell.material = this.material;
       });
-
-      var tl = gsap.timeline({ repeat: -1 });
-
-      tl.to(this.params, {
-        size: 0.98,
-        duration: 4,
-        ease: CustomEase.create("custom", "M0,0 C0.18,0.411 0.299,0.791 1,1 "),
-      });
-
       this.group.add(gltfScene);
     });
 
@@ -130,9 +155,17 @@ export default class Powers {
   render(t) {
     t /= 1000;
 
+    const time = t * 0.25;
+    const v = Math.max(Input.velocity * 50, -0.3);
+
+    console.log("v", v);
+
+    let s = this.ease((time / (-v + 1)) % 1) * 9 + 1;
+    s = this.clamp(s, 1, 10);
+
     this.group.children.forEach((_, i) => {
       _.children.forEach((cell, j) => {
-        cell.material.uniforms.uTime.value = this.params.size;
+        cell.material.uniforms.uTime.value = s;
         cell.material.uniforms.uPosition.value = new Vector3(
           (cell.position.x / _.children.length) * this.Scale[i],
           (cell.position.y / _.children.length) * this.Scale[i],
@@ -147,13 +180,7 @@ export default class Powers {
         );
       });
 
-      _.scale.set(
-        this.Scale[i] * this.params.size,
-        1,
-        this.Scale[i] * this.params.size,
-      );
-
-      // _.scale.set(this.Scale[i] * as, 1, this.Scale[i] * as);
+      _.scale.set(this.Scale[i] * s, 1, this.Scale[i] * s);
     });
   }
 
@@ -162,27 +189,15 @@ export default class Powers {
   debug(debug) {
     const { debug: pane } = this;
 
-    debug
-      .addBinding(this.params, "position", {
-        min: -10,
-        max: 10,
-      })
-      .on("change", (v) => {
-        this.material.uniforms.uTransformed.value = new Vector3(
-          this.params.position.x,
-          this.params.position.y,
-          this.params.position.z,
-        );
-      });
+    debug.addBinding(this.params, "position", {
+      min: -10,
+      max: 10,
+    });
 
-    debug
-      .addBinding(this.params, "factor", {
-        min: 0,
-        max: 10,
-      })
-      .on("change", (v) => {
-        this.material.uniforms.uFactor.value = this.params.factor;
-      });
+    debug.addBinding(this.params, "factor", {
+      min: 0,
+      max: 10,
+    });
 
     debug.addBinding(this.params, "greyFilter", {
       min: 0,

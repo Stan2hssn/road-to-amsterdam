@@ -38,9 +38,6 @@ void main() {
 
     // Linear to sRGB
     side = LinearTosRGB(side);
-    // top = LinearTosRGB(top);
-    // sideLimit = LinearTosRGB(sideLimit);
-    // colorRamp = LinearTosRGB(colorRamp);
 
     // Combine
     vec4 color = vec4(mix(side.rgb, uBackground, clamp(topLimit.g + clampGround, 0., 1.)), 1.);

@@ -1,8 +1,8 @@
 import Device from "./pure/Device";
-
-import gsap from "gsap";
-
 import { Vector2 } from "three";
+
+import CustomEase from "gsap/CustomEase";
+import gsap from "gsap";
 
 class Input {
   constructor() {
@@ -11,59 +11,73 @@ class Input {
     this.prevCoords = new Vector2();
     this.delta = new Vector2();
     this.timer = null;
-    this.count = 0;
     this.scroll = 0;
-    this.currentScroll = 0;
     this.previousScroll = 0;
-    this.scroll = 0;
+    this.currentScroll = 0;
+    this.count = 0;
+    this.velocity = 0;
+
+    this.onMouseMoveBound = this.onDocumentMouseMove.bind(this);
+    this.onTouchStartBound = this.onDocumentTouchStart.bind(this);
+    this.onTouchMoveBound = this.onDocumentTouchMove.bind(this);
+    this.onScrollBound = this.onScroll.bind(this);
   }
 
   init() {
-    this.xTo = gsap.quickTo(this.coords, "x", {
-      duration: 0.4,
-      ease: "power2.out",
+    gsap.registerPlugin(CustomEase);
+    this.xTo = gsap.quickTo(this, "velocity", {
+      duration: 5,
+      ease: CustomEase.create("custom", "M0,0 C0.18,0.411 0.299,0.791 1,1 "),
     });
 
-    this.yTo = gsap.quickTo(this.coords, "y", {
-      duration: 0.4,
-      ease: "power2.out",
+    document.addEventListener("mousemove", this.onMouseMoveBound, false);
+    document.addEventListener("touchstart", this.onTouchStartBound, {
+      passive: false,
     });
-
-    // document.addEventListener("wheel", this.onScroll.bind(this), {
-    //   passive: false,
-    // });
-
-    document.addEventListener(
-      "mousemove",
-      this.onDocumentMouseMove.bind(this),
-      false,
-    );
-    document.addEventListener(
-      "touchstart",
-      this.onDocumentTouchStart.bind(this),
-      { passive: false }, // Mark the listener as non-passive
-    );
-    document.addEventListener(
-      "touchmove",
-      this.onDocumentTouchMove.bind(this),
-      { passive: false }, // Mark the listener as non-passive
-    );
+    document.addEventListener("touchmove", this.onTouchMoveBound, {
+      passive: false,
+    });
+    document.addEventListener("wheel", this.onScrollBound, false);
   }
 
   onScroll(event) {
-    this.currentScroll = event.deltaY * 0.004;
+    clearTimeout(this.timer);
+    this.currentScroll = event.deltaY;
+    this.xTo(this.currentScroll / 6000);
     this.scroll += this.currentScroll;
+    Device.scrollTop = (this.scroll / 2).toFixed(3);
+    this.previousScroll = this.scroll;
+    Device.velocity = -this.velocity;
 
-    Device.scrollTop = (-this.scroll / 2).toFixed(4);
-    this.previousScroll = this.currentScroll;
+    this.timer = setTimeout(() => {
+      this.xTo(0);
+
+      gsap.to(Device, {
+        duration: 4,
+        velocity: 0,
+        ease: CustomEase.create("custom", "M0,0 C0.18,0.411 0.299,0.791 1,1 "),
+
+        onUpdate: () => {
+          Device.velocity = -this.velocity;
+        },
+      });
+    }, 30);
+  }
+
+  render() {
+    this.delta.subVectors(this.coords, this.prevCoords);
+    this.prevCoords.copy(this.coords);
+
+    if (this.prevCoords.x === 0 && this.prevCoords.y === 0)
+      this.delta.set(0, 0);
   }
 
   setCoords(x, y) {
     if (this.timer) clearTimeout(this.timer);
-
-    this.xTo((x / Device.viewport.width) * 2 - 1);
-    this.yTo(-(y / Device.viewport.height) * 2 + 1);
-
+    this.coords.set(
+      (x / Device.viewport.width) * 2 - 1,
+      -(y / Device.viewport.height) * 2 + 1,
+    );
     this.mouseMoved = true;
     this.timer = setTimeout(() => {
       this.mouseMoved = false;
@@ -88,15 +102,12 @@ class Input {
     }
   }
 
-  render() {
-    this.delta.subVectors(this.coords, this.prevCoords);
-    this.prevCoords.copy(this.coords);
-
-    if (this.prevCoords.x === 0 && this.prevCoords.y === 0)
-      this.delta.set(0, 0);
+  dispose() {
+    document.removeEventListener("mousemove", this.onMouseMoveBound);
+    document.removeEventListener("touchstart", this.onTouchStartBound);
+    document.removeEventListener("touchmove", this.onTouchMoveBound);
+    document.removeEventListener("wheel", this.onScrollBound);
   }
-
-  dispose() {}
 
   resize() {}
 }

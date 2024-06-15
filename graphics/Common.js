@@ -40,6 +40,8 @@ class Common {
     );
 
     this.camera.position.set(0, 25, 25);
+    this.camera.rotation.set(-0.55, 0.02, 0.01);
+    // this.camera.lookAt(0, 2, 0);
 
     this.renderer = new WebGLRenderer({
       canvas: canvas,
