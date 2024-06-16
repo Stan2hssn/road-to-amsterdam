@@ -25,43 +25,36 @@ class Input {
 
   init() {
     gsap.registerPlugin(CustomEase);
-    this.xTo = gsap.quickTo(this, "velocity", {
-      duration: 5,
-      ease: CustomEase.create("custom", "M0,0 C0.18,0.411 0.299,0.791 1,1 "),
+    this.vTo = gsap.quickTo(this, "velocity", {
+      duration: 4,
+      ease: "linear",
     });
 
-    document.addEventListener("mousemove", this.onMouseMoveBound, false);
+    document.addEventListener("mousemove", this.onMouseMoveBound, {
+      passive: false,
+    });
     document.addEventListener("touchstart", this.onTouchStartBound, {
       passive: false,
     });
     document.addEventListener("touchmove", this.onTouchMoveBound, {
       passive: false,
     });
-    document.addEventListener("wheel", this.onScrollBound, false);
+    document.addEventListener("wheel", this.onScrollBound, { passive: false });
   }
 
   onScroll(event) {
     clearTimeout(this.timer);
     this.currentScroll = event.deltaY;
-    this.xTo(this.currentScroll / 6000);
+    this.vTo(this.currentScroll / 6000);
     this.scroll += this.currentScroll;
     Device.scrollTop = (this.scroll / 2).toFixed(3);
     this.previousScroll = this.scroll;
-    Device.velocity = -this.velocity;
 
     this.timer = setTimeout(() => {
-      this.xTo(0);
-
-      gsap.to(Device, {
-        duration: 4,
-        velocity: 0,
-        ease: CustomEase.create("custom", "M0,0 C0.18,0.411 0.299,0.791 1,1 "),
-
-        onUpdate: () => {
-          Device.velocity = -this.velocity;
-        },
-      });
-    }, 30);
+      console.log("stop");
+      this.vTo(0.0);
+      event.preventDefault();
+    }, 100);
   }
 
   render() {

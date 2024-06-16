@@ -16,6 +16,7 @@ varying vec3 vGradient;
 
 void main() {
     vec3 pos = position;
+    vUv = pos.xz;
 
     vTop = (pos * 3.8 - 15.1);
 
@@ -32,7 +33,6 @@ void main() {
 
     gl_Position = projectionMatrix * viewPosition;
 
-    vUv = uv;
     vPosition = pos;
     vNormal = normal;
     viewer = norm;

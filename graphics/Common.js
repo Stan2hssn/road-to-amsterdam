@@ -20,7 +20,7 @@ class Common {
 
   scene = new Scene();
   params = {
-    sceneColor: 0xf2f1ed,
+    sceneColor: 0xdfdbd1,
     cameraFov: 20,
     cameraNear: 0.01,
     cameraFar: 100.0,
@@ -53,8 +53,6 @@ class Common {
     this.renderer.physicallyCorrectLights = true;
 
     this.renderer.setPixelRatio(Device.pixelRatio);
-
-    this.pane = new Pane();
   }
 
   render(t) {
@@ -82,6 +80,8 @@ class Common {
   }
 
   debug() {
+    this.pane = new Pane();
+
     const { debug = pane } = this;
   }
 }

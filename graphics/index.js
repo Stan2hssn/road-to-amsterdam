@@ -1,6 +1,7 @@
 import Common from "./Common";
 import Output from "./Output";
 import Input from "./Input";
+import { hash } from "three/examples/jsm/nodes/Nodes.js";
 
 export default class {
   constructor({ canvas }) {
@@ -16,8 +17,8 @@ export default class {
     this.resize();
     this.x = this.resize.bind(this);
 
-    Common.debug();
-    this.output.debug(Common.pane);
+    // Common.debug();
+    // this.output.debug(Common.pane);
 
     window.addEventListener("resize", this.x, false);
   }
