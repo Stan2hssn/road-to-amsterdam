@@ -38,13 +38,13 @@ canvas {
 }
 
 .object {
-  width: 70vw;
+  width: 100vw;
   aspect-ratio: 16/9;
   /* border: 2px solid white; */
 }
 
 @media screen and (min-width: 868px) {
   .object {
-    width: 50vw;
+    width: 100vw;
   }
 }

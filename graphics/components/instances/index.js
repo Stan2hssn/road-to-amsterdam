@@ -50,6 +50,8 @@ export default class {
       -rect.top - Device.scrollTop - rect.height * 0.5 + this.height * 0.5,
       0,
     );
+
+    this.mesh.material.uniforms.uRes.value.set(this.width, this.height);
   }
 
   setDebug(debug) {

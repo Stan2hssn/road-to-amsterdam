@@ -8,7 +8,7 @@ class Common {
   // create a scene and the parameters for the scene
   scene = new Scene();
   params = {
-    sceneColor: 0x222222,
+    sceneColor: 0x1111111,
     cameraFov: 52,
     cameraNear: 0.01,
     cameraFar: 10000.0,

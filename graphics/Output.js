@@ -15,7 +15,7 @@ export default class {
   init() {
     this.component.powers = new Powers();
     // this.helpers.controls = new Controls();
-    this.helpers.grid = new GridHelper(100, 100);
+    // this.helpers.grid = new GridHelper(100, 100);
   }
 
   render(t) {

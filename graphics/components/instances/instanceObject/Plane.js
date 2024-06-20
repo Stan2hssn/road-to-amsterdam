@@ -8,12 +8,20 @@ import {
   Float32BufferAttribute,
   Color,
   SRGBColorSpace,
+  Vector2,
 } from "three";
 
-import vertexShader from "../glsl/vertex.glsl";
-import fragmentShader from "../glsl/fragment.glsl";
+import TextTexture from "/Texture/text.jpg";
+
+import vertexShader from "./glsl/vertex.glsl";
+import fragmentShader from "./glsl/fragment.glsl";
+
+import textVertex from "./glsl/textVertex.glsl";
+import textFragment from "./glsl/textFragment.glsl";
+
 import CustomPlaneGeometry from "./CustomPlaneGeometry";
 import Device from "../../../pure/Device";
+import Input from "../../../Input";
 
 export default class {
   params = {
@@ -25,10 +33,18 @@ export default class {
     this.init();
   }
 
+  texture() {
+    this.loader = new TextureLoader();
+    this.texture = {
+      textTexture: this.loader.load(TextTexture),
+    };
+  }
+
   init() {
-    const geometry = new CustomPlaneGeometry(1, 1, 10).geometry;
-    // const geometry = new PlaneGeometry(1, 1, 10, 10);
-    console.log("this.geometry", geometry);
+    this.texture();
+    ``;
+    // const geometry = new CustomPlaneGeometry(1, 1, 10).geometry;
+    const geometry = new PlaneGeometry(1, 1, 10, 10);
 
     const { speed, influence } = this.params;
 
@@ -37,11 +53,19 @@ export default class {
         uTime: new Uniform(0),
         uSpeed: new Uniform(speed),
         uInfluence: new Uniform(influence),
+        uText: new Uniform(this.texture.textTexture),
+        uRes: new Uniform(new Vector2(0, 0)),
+        uMouse: new Uniform(new Vector2(0, 0)),
       },
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader,
+      vertexShader: textVertex,
+      fragmentShader: textFragment,
+      // vertexShader: vertexShader,
+      // fragmentShader: fragmentShader,
       // wireframe: true,
+      transparent: true,
     });
+
+    console.log("this.material", this.material);
 
     this.mesh = new Mesh(geometry, this.material);
   }
@@ -52,10 +76,17 @@ export default class {
   }
 
   render(t) {
-    const newTimeValue = t / 60;
+    let newTimeValue = t / 1000;
+    // newTimeValue *= 0.25;
+
     if (this.mesh.material.uniforms.uTime.value !== newTimeValue) {
       this.mesh.material.uniforms.uTime.value = newTimeValue;
     }
+
+    this.mesh.material.uniforms.uMouse.value = new Vector2(
+      Input.coords.x,
+      Input.coords.y,
+    );
 
     this.mesh.material.uniforms.uSpeed.value = Device.velocity;
   }

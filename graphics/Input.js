@@ -23,8 +23,18 @@ class Input {
   }
 
   init() {
-    this.xTo = gsap.quickTo(this, "velocity", {
+    this.vTo = gsap.quickTo(this, "velocity", {
       duration: 0.2,
+      ease: "power1.out",
+    });
+
+    this.xTo = gsap.quickTo(this.coords, "x", {
+      duration: 0.5,
+      ease: "power1.out",
+    });
+
+    this.yTo = gsap.quickTo(this.coords, "y", {
+      duration: 0.5,
       ease: "power1.out",
     });
 
@@ -41,14 +51,15 @@ class Input {
   onScroll(event) {
     clearTimeout(this.timer);
     this.currentScroll = event.deltaY;
-    this.xTo(this.currentScroll / 6000);
+    this.vTo(this.currentScroll / 20000);
     this.scroll += this.currentScroll;
+    console.log("scrolling", Device.scrollTop, "velocity", this.scroll);
     Device.scrollTop = (this.scroll / 2).toFixed(3);
     this.previousScroll = this.scroll;
     Device.velocity = -this.velocity;
 
     this.timer = setTimeout(() => {
-      this.xTo(0);
+      this.vTo(0);
 
       gsap.to(Device, {
         duration: 0.5,
@@ -70,11 +81,8 @@ class Input {
 
   setCoords(x, y) {
     if (this.timer) clearTimeout(this.timer);
-    this.coords.set(
-      (x / Device.viewport.width) * 2 - 1,
-      -(y / Device.viewport.height) * 2 + 1,
-    );
-    this.mouseMoved = true;
+    this.xTo((x / Device.viewport.width) * 2 - 1);
+    this.yTo(-(y / Device.viewport.height) * 2 + 1)((this.mouseMoved = true));
     this.timer = setTimeout(() => {
       this.mouseMoved = false;
     }, 100);
