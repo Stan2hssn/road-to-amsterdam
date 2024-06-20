@@ -183,13 +183,12 @@ export default class Powers {
   render(t) {
     t /= 1000;
 
-    const normalizedTime = 0.25; // A constant rate factor for time progression
+    let v = Device.scrollTop / 500;
+    v += Input.velocity / 2;
 
-    // Normalize velocity to be within a fixed range of -0.3 to 0.5
-    const v = Math.max(Math.min(Input.velocity * 100, 1), -0.3) + 1;
+    t += v;
 
-    // Calculate a constant time influence factor that doesn't grow with t
-    const constantTimeInfluence = (t * normalizedTime + v * 4) % 1;
+    const constantTimeInfluence = (t * 0.25) % 1;
 
     let s = Math.min(this.ease(constantTimeInfluence), 1) * 9 + 1;
     s = this.clamp(s, 1, 10);
