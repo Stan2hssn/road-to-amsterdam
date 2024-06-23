@@ -45,6 +45,6 @@ canvas {
 
 @media screen and (min-width: 868px) {
   .object {
-    width: 100vw;
+    height: 100vh;
   }
 }

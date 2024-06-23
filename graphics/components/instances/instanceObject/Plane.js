@@ -12,6 +12,8 @@ import {
 } from "three";
 
 import TextTexture from "/Texture/text.jpg";
+import NoiseTexture from "/Texture/noise.png";
+import NoiseFlowTexture from "/Texture/noiseFlow.jpg";
 
 import vertexShader from "./glsl/vertex.glsl";
 import fragmentShader from "./glsl/fragment.glsl";
@@ -22,11 +24,13 @@ import textFragment from "./glsl/textFragment.glsl";
 import CustomPlaneGeometry from "./CustomPlaneGeometry";
 import Device from "../../../pure/Device";
 import Input from "../../../Input";
+import { step } from "three/examples/jsm/nodes/Nodes.js";
 
 export default class {
   params = {
     speed: 0,
     influence: 2,
+    step: 0.7,
   };
 
   constructor() {
@@ -37,6 +41,8 @@ export default class {
     this.loader = new TextureLoader();
     this.texture = {
       textTexture: this.loader.load(TextTexture),
+      noiseTexture: this.loader.load(NoiseTexture),
+      noiseFlowTexture: this.loader.load(NoiseFlowTexture),
     };
   }
 
@@ -56,6 +62,10 @@ export default class {
         uText: new Uniform(this.texture.textTexture),
         uRes: new Uniform(new Vector2(0, 0)),
         uMouse: new Uniform(new Vector2(0, 0)),
+        uShift: new Uniform(0),
+        uStep: new Uniform(this.params.step),
+        uNoise: new Uniform(this.texture.noiseTexture),
+        uNoiseFlow: new Uniform(this.texture.noiseFlowTexture),
       },
       vertexShader: textVertex,
       fragmentShader: textFragment,
@@ -89,20 +99,21 @@ export default class {
     );
 
     this.mesh.material.uniforms.uSpeed.value = Device.velocity;
+
+    this.mesh.material.uniforms.uShift.value = Device.scrollTop;
   }
 
   resize() {}
 
   setDebug(debug) {
     debug
-      .addBinding(this.params, "influence", {
-        label: "Influence",
-        min: -4,
-        max: 4,
-        step: 0.01,
+      .addBinding(this.params, "step", {
+        label: "Step",
+        min: 0,
+        max: 1,
       })
-      .on("change", () => {
-        this.material.uniforms.uInfluence.value = this.params.influence;
+      .on("change", (v) => {
+        this.mesh.material.uniforms.uStep.value = this.params.step;
       });
   }
 }

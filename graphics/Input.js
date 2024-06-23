@@ -29,13 +29,13 @@ class Input {
     });
 
     this.xTo = gsap.quickTo(this.coords, "x", {
-      duration: 0.5,
-      ease: "power1.out",
+      duration: 0.2,
+      ease: "power2.out",
     });
 
     this.yTo = gsap.quickTo(this.coords, "y", {
-      duration: 0.5,
-      ease: "power1.out",
+      duration: 0.2,
+      ease: "power2.out",
     });
 
     document.addEventListener("mousemove", this.onMouseMoveBound, false);
@@ -82,7 +82,7 @@ class Input {
   setCoords(x, y) {
     if (this.timer) clearTimeout(this.timer);
     this.xTo((x / Device.viewport.width) * 2 - 1);
-    this.yTo(-(y / Device.viewport.height) * 2 + 1)((this.mouseMoved = true));
+    this.yTo(-(y / Device.viewport.height) * 2 + 1);
     this.timer = setTimeout(() => {
       this.mouseMoved = false;
     }, 100);
