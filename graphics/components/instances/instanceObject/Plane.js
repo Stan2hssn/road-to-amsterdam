@@ -15,16 +15,15 @@ import TextTexture from "/Texture/text.jpg";
 import NoiseTexture from "/Texture/noise.png";
 import NoiseFlowTexture from "/Texture/noiseFlow.jpg";
 
-import vertexShader from "./glsl/vertex.glsl";
-import fragmentShader from "./glsl/fragment.glsl";
+import vertexShader from "../../glsl/displacement/vertex.vert";
+import fragmentShader from "../../glsl/displacement/fragment.frag";
 
-import textVertex from "./glsl/textVertex.glsl";
-import textFragment from "./glsl/textFragment.glsl";
+import textVertex from "../../glsl/simulation/textVertex.vert";
+import textFragment from "../../glsl/simulation/textFragment.frag";
 
 import CustomPlaneGeometry from "./CustomPlaneGeometry";
 import Device from "../../../pure/Device";
 import Input from "../../../Input";
-import { step } from "three/examples/jsm/nodes/Nodes.js";
 
 export default class {
   params = {
@@ -48,8 +47,6 @@ export default class {
 
   init() {
     this.texture();
-    ``;
-    // const geometry = new CustomPlaneGeometry(1, 1, 10).geometry;
     const geometry = new PlaneGeometry(1, 1, 10, 10);
 
     const { speed, influence } = this.params;
@@ -66,6 +63,14 @@ export default class {
         uStep: new Uniform(this.params.step),
         uNoise: new Uniform(this.texture.noiseTexture),
         uNoiseFlow: new Uniform(this.texture.noiseFlowTexture),
+        tDiffuse: { value: null },
+        tPrev: { value: null },
+        uResolution: {
+          value: new Vector2(
+            Device.viewport.width,
+            Device.viewport.height,
+          ).multiplyScalar(Device.pixelRatio),
+        },
       },
       vertexShader: textVertex,
       fragmentShader: textFragment,
@@ -74,8 +79,6 @@ export default class {
       // wireframe: true,
       transparent: true,
     });
-
-    console.log("this.material", this.material);
 
     this.mesh = new Mesh(geometry, this.material);
   }
@@ -103,7 +106,13 @@ export default class {
     this.mesh.material.uniforms.uShift.value = Device.scrollTop;
   }
 
-  resize() {}
+  resize(scale, height, width) {
+    this.material.uniforms.uResolution.value = new Uniform(
+      new Vector2(Device.viewport.width, Device.viewport.height).multiplyScalar(
+        Device.pixelRatio,
+      ),
+    );
+  }
 
   setDebug(debug) {
     debug

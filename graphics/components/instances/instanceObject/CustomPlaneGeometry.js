@@ -6,7 +6,6 @@ import {
   Scene,
   WebGLRenderer,
 } from "three";
-import { uv } from "three/examples/jsm/nodes/Nodes.js";
 
 export default class CustomPlaneGeometry {
   constructor(

@@ -1,4 +1,4 @@
-import { Group } from "three";
+import { Group, Vector2 } from "three";
 
 import Common from "../Common";
 
@@ -33,9 +33,28 @@ export default class {
   dispose() {}
 
   render(t) {
+    if (!t) return;
+
     Object.keys(this.Instances).forEach((key) => {
       this.Instances[key].render(t);
     });
+
+    Common.renderer.setRenderTarget(Common.renderTarget);
+    Common.renderer.render(Common.preScene, Common.preCamera);
+
+    Common.renderer.setRenderTarget(Common.targetA);
+    Common.renderer.render(Common.fboScene, Common.fboCamera);
+    Common.fboMaterial.uniforms.tDiffuse.value = Common.renderTarget.texture;
+    Common.fboMaterial.uniforms.tPrev.value = Common.targetA.texture;
+
+    Common.renderer.setRenderTarget(null);
+    Common.renderer.render(Common.preScene, Common.preCamera);
+    Common.renderer.render(Common.fboScene, Common.fboCamera);
+    // Common.renderer.render(Common.scene, Common.camera);
+
+    let temp = Common.targetA;
+    Common.targetA = Common.targetB;
+    Common.targetB = temp;
   }
 
   resize(scale, height, width) {

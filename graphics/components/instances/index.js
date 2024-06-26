@@ -52,6 +52,12 @@ export default class {
     );
 
     this.mesh.material.uniforms.uRes.value.set(this.width, this.height);
+
+    Object.keys(this.instance).forEach((key) => {
+      if (typeof this.instance[key].resize === "function") {
+        this.instance[key].resize(scale, height, width);
+      }
+    });
   }
 
   setDebug(debug) {

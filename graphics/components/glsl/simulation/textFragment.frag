@@ -86,18 +86,18 @@ void main() {
 
     vec2 bubble4 = bubble(p, noisColor, vec2(cos(print.x), sin(print.y)), 0.);
 
-    float scaleFac = 2.;
+    float scaleFac = 3.;
 
     float dist = length(bubble1) * scaleFac;
     float dist1 = length(bubble2) * scaleFac;
     float dist2 = length(bubble3) * scaleFac;
     float dist3 = length(bubble4) * scaleFac;
 
-    float compiler = min(min(dist, dist1), min(dist2, dist3));
+    float compiler = dist;
 
     vec2 dir = normalize(bubble1 - uMouse / 2.0);
 
-    float step = .8;
+    float step = .85;
 
     vec2 c = dir * (1. - smoothstep(0.4, step + .1, compiler));
 
@@ -110,7 +110,7 @@ void main() {
 
     // vec4 color = texture2D(uText, uv - (inversion - .3));
 
-    newUv = newUv * (snoise(newUv * 1.5 + uTime * .1) * .1 + .9);
+    newUv = newUv * (snoise(newUv * 1.5 + uTime * .1) * .02 + .9);
     vec4 color = texture2D(uText, newUv);
 
     mask *= smoothstep(0.5, 1., 1. - color.r);
