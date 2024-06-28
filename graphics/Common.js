@@ -23,7 +23,7 @@ import {
 class Common {
   scene = new Scene();
   params = {
-    sceneColor: 0xf1f1f1,
+    sceneColor: 0x111111,
     cameraFov: 52,
     cameraNear: 0.01,
     cameraFar: 10000.0,
