@@ -15,10 +15,13 @@ class Input {
     this.currentScroll = 0;
     this.count = 0;
     this.velocity = 0;
+    this.mouseVelocity = 0;
 
     this.onMouseMoveBound = this.onDocumentMouseMove.bind(this);
     this.onTouchStartBound = this.onDocumentTouchStart.bind(this);
+    this.onTouchEndBound = this.onDocumentTouchEnd.bind(this);
     this.onTouchMoveBound = this.onDocumentTouchMove.bind(this);
+
     this.onScrollBound = this.onScroll.bind(this);
   }
 
@@ -44,6 +47,9 @@ class Input {
     });
     document.addEventListener("touchmove", this.onTouchMoveBound, {
       passive: false,
+    });
+    document.addEventListener("touchend", this.onTouchEndBound, {
+      passive: true,
     });
     document.addEventListener("wheel", this.onScrollBound, false);
   }
@@ -75,17 +81,30 @@ class Input {
     this.delta.subVectors(this.coords, this.prevCoords);
     this.prevCoords.copy(this.coords);
 
-    if (this.prevCoords.x === 0 && this.prevCoords.y === 0)
+    if (this.prevCoords.x === 0 && this.prevCoords.y === 0) {
       this.delta.set(0, 0);
+    }
   }
 
   setCoords(x, y) {
     if (this.timer) clearTimeout(this.timer);
     this.xTo((x / Device.viewport.width) * 2 - 1);
     this.yTo(-(y / Device.viewport.height) * 2 + 1);
+    gsap.to(this, {
+      mouseVelocity: 1,
+      duration: 0.8,
+      ease: "power2.out",
+    });
+
     this.timer = setTimeout(() => {
+      gsap.to(this, {
+        mouseVelocity: 0,
+        duration: 0.8,
+        ease: "power2.out",
+      });
+
       this.mouseMoved = false;
-    }, 100);
+    }, 500);
   }
 
   onDocumentMouseMove(event) {
@@ -95,7 +114,13 @@ class Input {
   onDocumentTouchStart(event) {
     if (event.touches.length === 1) {
       event.preventDefault();
+      this.mouseMoved = true;
       this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
+      gsap.to(this, {
+        mouseVelocity: 1,
+        duration: 2,
+        ease: "power1.out",
+      });
     }
   }
 
@@ -103,6 +128,16 @@ class Input {
     if (event.touches.length === 1) {
       event.preventDefault();
       this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
+    }
+  }
+
+  onDocumentTouchEnd(event) {
+    if (event.touches.length === 0) {
+      gsap.to(this, {
+        mouseVelocity: 0,
+        duration: 2,
+        ease: "power1.out",
+      });
     }
   }
 

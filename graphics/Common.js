@@ -17,12 +17,13 @@ import {
   WebGLRenderTarget,
   OrthographicCamera,
   ShaderMaterial,
+  Uniform,
 } from "three";
 
 class Common {
   scene = new Scene();
   params = {
-    sceneColor: 0x111111,
+    sceneColor: 0xf1f1f1,
     cameraFov: 52,
     cameraNear: 0.01,
     cameraFar: 10000.0,
@@ -115,6 +116,7 @@ class Common {
           value: new Vector2(Device.viewport.width, Device.viewport.height),
         },
         uTime: { value: 0 },
+        uMouseVel: new Uniform(0),
       },
       vertexShader: vertex,
       fragmentShader: fboFragment,
@@ -136,6 +138,8 @@ class Common {
     this.fboMaterial.uniforms.uTime.value = t;
 
     this.fboMaterial.uniforms.uMouse.value.set(Input.coords.x, Input.coords.y);
+
+    this.fboMaterial.uniforms.uMouseVel.value = Input.mouseVelocity;
 
     this.cameraY = -Device.scrollTop;
     this.scrollContainer.style.transform = `translate3d(0, ${-Device.scrollTop}px, 0)`;

@@ -71,6 +71,7 @@ export default class {
             Device.viewport.height,
           ).multiplyScalar(Device.pixelRatio),
         },
+        uMouseVel: new Uniform(0),
       },
       vertexShader: textVertex,
       fragmentShader: textFragment,
@@ -100,6 +101,8 @@ export default class {
       Input.coords.x,
       Input.coords.y,
     );
+
+    this.mesh.material.uniforms.uMouseVel.value = Input.mouseVelocity;
 
     this.mesh.material.uniforms.uSpeed.value = Device.velocity;
 

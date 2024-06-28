@@ -2,6 +2,7 @@ import { Uniform, Vector2 } from "three";
 
 import Device from "../../pure/Device";
 import Plane from "./instanceObject/Plane";
+import Input from "../../Input";
 
 export default class {
   constructor($target, geometry) {
