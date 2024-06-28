@@ -1,3 +1,5 @@
+import { Uniform, Vector2 } from "three";
+
 import Device from "../../pure/Device";
 import Plane from "./instanceObject/Plane";
 
@@ -50,6 +52,14 @@ export default class {
       -rect.top - Device.scrollTop - rect.height * 0.5 + this.height * 0.5,
       0,
     );
+
+    this.mesh.material.uniforms.uResolution.value = new Uniform(
+      new Vector2(Device.viewport.width, Device.viewport.height).multiplyScalar(
+        Device.pixelRatio,
+      ),
+    );
+
+    console.log(this.mesh.material.uniforms.uResolution.value);
 
     this.mesh.material.uniforms.uRes.value.set(this.width, this.height);
 

@@ -34,6 +34,24 @@ class Common {
     this.render = this.render.bind(this);
   }
 
+  init({ canvas, scrollContainer }) {
+    this.setupPipeline();
+    this.camera = this.setCamera();
+    this.scrollContainer = scrollContainer;
+
+    this.renderer = new WebGLRenderer({
+      canvas,
+      alpha: false,
+      stencil: false,
+      powerPreference: "high-performance",
+      antialias: false,
+    });
+
+    this.renderer.physicallyCorrectLights = true;
+    this.renderer.setPixelRatio(Device.pixelRatio);
+    this.debug = window.location.hash === "#debug" ? new Pane() : null;
+  }
+
   setCamera() {
     this.scale = 1;
 
@@ -55,6 +73,7 @@ class Common {
 
     return camera;
   }
+
   setRaycaster() {
     this.raycasterPlane = new Mesh(
       new PlaneGeometry(this.frustumSize, 2),
@@ -73,24 +92,6 @@ class Common {
     this.preScene.add(this.raycasterPlane, this.dummy);
   }
 
-  init({ canvas, scrollContainer }) {
-    this.setupPipeline();
-    this.camera = this.setCamera();
-    this.scrollContainer = scrollContainer;
-
-    this.renderer = new WebGLRenderer({
-      canvas,
-      alpha: false,
-      stencil: false,
-      powerPreference: "high-performance",
-      antialias: false,
-    });
-
-    this.renderer.physicallyCorrectLights = true;
-    this.renderer.setPixelRatio(Device.pixelRatio);
-    this.debug = window.location.hash === "#debug" ? new Pane() : null;
-  }
-
   setupPipeline() {
     this.renderTarget = new WebGLRenderTarget(
       Device.viewport.width,
@@ -99,19 +100,18 @@ class Common {
     this.targetA = this.renderTarget.clone();
     this.targetB = this.renderTarget.clone();
 
-    this.fboScene = new Scene();
-
     this.aspect = Device.viewport.width / Device.viewport.height;
     this.frustumSize = Device.viewport.height / 2;
 
+    this.fboScene = new Scene();
     this.fboCamera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
     this.fboMaterial = new ShaderMaterial({
       uniforms: {
         tDiffuse: { value: this.renderTarget.texture },
         tPrev: { value: this.targetA.texture },
         uMouse: { value: new Vector2(0, 0) },
-        uPrevMouse: { value: new Vector2(0, 0) },
-        resolution: {
+        uResolution: {
           value: new Vector2(Device.viewport.width, Device.viewport.height),
         },
         uTime: { value: 0 },
@@ -135,22 +135,7 @@ class Common {
 
     this.fboMaterial.uniforms.uTime.value = t;
 
-    this.pointer.x = Input.coords.x;
-    this.pointer.y = Input.coords.y;
-    this.raycaster.setFromCamera(this.pointer, this.preCamera);
-    const intersects = this.raycaster.intersectObject(this.raycasterPlane);
-
-    if (intersects.length >= 1) {
-      this.dummy.position.copy(intersects[0].point);
-      const { x, y } = intersects[0].point;
-
-      console.log("x", x, "y", y);
-
-      this.fboMaterial.uniforms.uMouse.value = new Vector2(
-        1 + x * 10,
-        1 + y * 10,
-      );
-    }
+    this.fboMaterial.uniforms.uMouse.value.set(Input.coords.x, Input.coords.y);
 
     this.cameraY = -Device.scrollTop;
     this.scrollContainer.style.transform = `translate3d(0, ${-Device.scrollTop}px, 0)`;
@@ -207,7 +192,7 @@ class Common {
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);
     this.renderer.setPixelRatio(Device.pixelRatio);
 
-    this.fboMaterial.uniforms.resolution.value.set(
+    this.fboMaterial.uniforms.uResolution.value.set(
       Device.viewport.width,
       Device.viewport.height,
     );

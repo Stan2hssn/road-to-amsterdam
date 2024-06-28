@@ -106,13 +106,7 @@ export default class {
     this.mesh.material.uniforms.uShift.value = Device.scrollTop;
   }
 
-  resize(scale, height, width) {
-    this.material.uniforms.uResolution.value = new Uniform(
-      new Vector2(Device.viewport.width, Device.viewport.height).multiplyScalar(
-        Device.pixelRatio,
-      ),
-    );
-  }
+  resize(scale, height, width) {}
 
   setDebug(debug) {
     debug

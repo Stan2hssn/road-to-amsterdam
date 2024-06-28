@@ -3,7 +3,10 @@ uniform vec2 uMouse;
 uniform float uTime;
 uniform float uShift;
 uniform float uStep;
+uniform vec2 uRes;
 
+uniform sampler2D tDiffuse;
+uniform sampler2D tPrev;
 uniform sampler2D uNoise;
 uniform sampler2D uNoiseFlow;
 
@@ -60,69 +63,46 @@ vec2 bubble(vec2 p, vec4 noisColor, vec2 shift, float influence) {
 
 void main() {
     vec2 uv = vUv;
-    float time = uTime * 0.1;
 
-    // uv = fract(uv);
-    vec4 noisColor = texture2D(uNoiseFlow, fract(uv + vec2(cos(uTime * .01), sin(uTime * .01))));
+    vec2 winUv = gl_FragCoord.xy / uRes.xy;
+    float aspect = uRes.y / uRes.x;
+    winUv = winUv * .5;
 
-    // vec2 p = uv * 2. - 1.0;
-    vec2 p = (vec2(uv.x, (uv.y + .5) * .5) * 2.0 - 1.);
+    float ratio = uRes.x / uRes.y;
+    float direction = step(1., ratio);
+    vec2 responsive = vec2(mix(ratio, 1.0, direction), mix(1.0, 1.0 / ratio, direction));
+    vec2 mUv = (uv - .5) * responsive;
+    vec2 corrected_mouse = uMouse * responsive;
+    corrected_mouse = corrected_mouse * .5;
 
-    vec2 bubble1 = bubble(p, noisColor, vec2(0., 0.), 1.);
+    vec4 current = texture2D(tDiffuse, winUv);
 
-    vec2 print = vec2(0.);
-    print.x -= .5 - prng(time + .5);
-    print.y += ((prng(time) - .5) * 1.);
+    float scaleFac = .7;
 
-    vec2 bubble2 = bubble(p, noisColor, vec2(sin(print.x), cos(print.y)), 0.);
+    float dist = length(current.rg);
 
-    print.x -= 1. + prng(time + .2);
-    print.y -= ((prng(time + PI) + 1.0));
+    float compiler = 1. - dist;
 
-    vec2 bubble3 = bubble(p, noisColor, vec2(cos(print.x), sin(print.y)), 0.);
+    vec2 dir = normalize(corrected_mouse - winUv);
 
-    print.x -= .5 - prng(time - .5);
-    print.y -= ((prng(time - PI * 2.) - 1.0) * .1);
-
-    vec2 bubble4 = bubble(p, noisColor, vec2(cos(print.x), sin(print.y)), 0.);
-
-    float scaleFac = 3.;
-
-    float dist = length(bubble1) * scaleFac;
-    float dist1 = length(bubble2) * scaleFac;
-    float dist2 = length(bubble3) * scaleFac;
-    float dist3 = length(bubble4) * scaleFac;
-
-    float compiler = dist;
-
-    vec2 dir = normalize(bubble1 - uMouse / 2.0);
-
-    float step = .85;
+    float step = .9;
 
     vec2 c = dir * (1. - smoothstep(0.4, step + .1, compiler));
 
-    vec2 newUv = uv - (c);
+    vec2 newUv = uv + (c);
 
     float mask = smoothstep(step, step, compiler);
 
-    float inversion = smoothstep(.01, 1., compiler);
-    inversion = fract(smoothstep(1.01, .6, compiler));
-
-    // vec4 color = texture2D(uText, uv - (inversion - .3));
-
-    newUv = newUv * (snoise(newUv * 1.5 + uTime * .1) * .02 + .9);
     vec4 color = texture2D(uText, newUv);
 
     mask *= smoothstep(0.5, 1., 1. - color.r);
-    // mask = 1.;
 
     gl_FragColor = vec4(.2, 0.3, 0.2, 1.0);
-    gl_FragColor = vec4(vec3(dist), 1.);
     gl_FragColor = vec4(color.rgb + vec3(0., 0., 1.), 1.);
-    gl_FragColor = vec4(inversion, 1., 1., 1.);
-    gl_FragColor = noisColor;
     gl_FragColor = color;
     gl_FragColor = vec4(c, 1., 1.0);
+    gl_FragColor = vec4(winUv, 0., 1.);
     gl_FragColor = vec4(compiler, 0., 0., 1.);
+    gl_FragColor = vec4(current.rgb, 1.);
     gl_FragColor = vec4(color.rgb + vec3(0., 0., 1.), mask);
 }

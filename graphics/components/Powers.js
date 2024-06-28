@@ -46,11 +46,13 @@ export default class {
     Common.renderer.render(Common.fboScene, Common.fboCamera);
     Common.fboMaterial.uniforms.tDiffuse.value = Common.renderTarget.texture;
     Common.fboMaterial.uniforms.tPrev.value = Common.targetA.texture;
+    this.Instances[0].mesh.material.uniforms.tDiffuse.value =
+      Common.targetA.texture;
 
     Common.renderer.setRenderTarget(null);
     Common.renderer.render(Common.preScene, Common.preCamera);
     Common.renderer.render(Common.fboScene, Common.fboCamera);
-    // Common.renderer.render(Common.scene, Common.camera);
+    Common.renderer.render(Common.scene, Common.camera);
 
     let temp = Common.targetA;
     Common.targetA = Common.targetB;

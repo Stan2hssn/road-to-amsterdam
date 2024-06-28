@@ -39,7 +39,8 @@ canvas {
 
 .object {
   width: 100vw;
-  aspect-ratio: 16/9;
+  height: 100vh;
+  /* aspect-ratio: 16/9; */
   /* border: 2px solid white; */
 }
 

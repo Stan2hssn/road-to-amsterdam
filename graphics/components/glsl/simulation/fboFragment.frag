@@ -36,21 +36,35 @@ float fbm(vec2 x, int NUM_OCTAVES) {
 
 void main() {
     vec2 uv = vUv;
-    float aspect = uResolution.x / uResolution.y;
-    // uv *= aspect;
+    vec4 prev = texture2D(tPrev, uv) * .95;
+    uv -= 0.5;
 
-    vec4 prev = texture2D(tPrev, uv);
+    float ratio = uResolution.x / uResolution.y;
+
+    float direction = step(1., ratio);
+
+    // uv.x *= ratio;
+    // vec2 mUv = uv * vec2(ratio, 1.0);
+    vec2 responsive = vec2(mix(ratio, 1.0, direction), mix(1.0, 1.0 / ratio, direction));
+    vec2 mUv = uv * responsive;
+
     vec4 current = texture2D(tDiffuse, uv);
+    vec2 corrected_mouse = uMouse * responsive;
 
-    float l = length(uMouse * .5 - uv);
-    l = smoothstep(.1, 0., l);
+    float l = length(corrected_mouse * .5 - mUv);
+    l = smoothstep(.2, 0., l);
 
-    float preL = length(uPrevMouse * .5 - uv);
-    preL = smoothstep(.01, .0, preL);
+    float l2 = length(mUv - corrected_mouse * .5);
+    l2 = smoothstep(.0, .1, l2);
+    // float preL = length(uPrevMouse * .5 - uv);
+    // preL = smoothstep(.01, .0, preL);
 
-    gl_FragColor = vec4(uv, 1., 1.);
-    gl_FragColor = vec4(l + preL * .9, 1., 1., 1.);
+    float mask = smoothstep(.01, .0, l);
+
     gl_FragColor = vec4(1., 1., 1., 1.);
-    gl_FragColor = vec4(prev.rgb, 1.);
-    gl_FragColor = vec4(vec3(l) + prev.rgb * .9, 1.);
+    gl_FragColor = vec4(current.rgb, 1.);
+    gl_FragColor = vec4(uv, 1., 1.);
+    gl_FragColor = vec4(l + smoothstep(1., prev.r * .9, l), 1., 1., 1.);
+    // gl_FragColor = vec4(c, 1., 1., 1.);
+    gl_FragColor = vec4(vec3(l + prev.r), 1.);
 }
