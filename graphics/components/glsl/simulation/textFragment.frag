@@ -64,29 +64,35 @@ void main() {
 
     float dist = current.r;
 
-    float compiler = 1. - dist;
+    float compiler = dist;
 
-    vec2 dir = normalize((current.r) - (winUv));
+    vec2 dir = normalize((corrected_mouse) - mUv);
 
     float stepFactor = .9;
 
-    vec2 c = dir * (1. - smoothstep(0.4, stepFactor + .1, compiler)) * .1;
+    vec2 c = (dir) * (smoothstep(0.7, stepFactor + .1, compiler)) * .1;
 
-    vec2 newUv = (mUv + .5) * abs(1. + c);
+    vec2 newUv = (mUv + .5) * 1. + c;
 
-    float mask = smoothstep(stepFactor - .45, stepFactor - .4, compiler) - step(.5, current.r);
+    float mask = smoothstep(stepFactor, stepFactor - .01, compiler);
 
-    vec4 color = texture2D(uText, (((fbm(newUv + time, 41) * (.2 * (uMouseVel * .1 + .2))) + 1.) * newUv) * vec2(1., 1.6) - vec2(0.15, .3));
+    float noiseFactor = ((fbm(newUv + time, 41) * (.1 * (uMouseVel * .1 + .5))) + 1.);
 
-    mask *= smoothstep(0.5, 1., 1. - color.r);
+    vec4 text = texture2D(uText, noiseFactor * vec2(fract(newUv.x + time), newUv.y * 5. - .5) - vec2(0.0, 2. + .8));
+    vec4 text1 = texture2D(uText, noiseFactor * vec2(fract(newUv.x - time), newUv.y * 5. - .5) - vec2(0.0, 1. + .8));
+    vec4 text2 = texture2D(uText, noiseFactor * vec2(fract(newUv.x + time), newUv.y * 5. - .5) - vec2(0.0, 0. + .8));
 
-    gl_FragColor = vec4(.2, 0.3, 0.2, 1.0);
-    gl_FragColor = vec4(color.rgb + vec3(0., 0., 1.), 1.);
-    gl_FragColor = color;
-    gl_FragColor = vec4(c, 1., 1.0);
+    text.rgb *= text1.rgb * text2.rgb;
+
+    mask *= smoothstep(0.8, 1., 1. - text.r);
+
+    gl_FragColor = vec4(text.rgb + vec3(0., 0., 1.), 1.);
+    gl_FragColor = text;
+    gl_FragColor = vec4(text.rgb + vec3(.0, 0.0, 1.), mask);
+    gl_FragColor = vec4((current.r - winUv) + (winUv), 0., 1.);
     gl_FragColor = vec4(newUv, 0., 1.);
+    gl_FragColor = vec4(c, 1., 1.0);
     gl_FragColor = vec4(current.rgb, 1.);
-    gl_FragColor = vec4(mask, 0., 0., 1.);
-    gl_FragColor = vec4(color.rgb + vec3(.0, 0.0, 1.), mask);
-    gl_FragColor = vec4(color.rgb + vec3(.3, 0.29, .8), mask);
+    gl_FragColor = vec4(mask, 0.3, 0.2, 1.0);
+    gl_FragColor = vec4(text.rgb + vec3(.3, 0.29, .8), mask);
 }

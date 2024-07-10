@@ -5,6 +5,7 @@ uniform vec2 uPrevMouse;
 uniform vec2 uResolution;
 uniform float uTime;
 uniform float uMouseVel;
+uniform float uShift;
 
 varying vec2 vUv;
 
@@ -38,15 +39,13 @@ float fbm(vec2 x, int NUM_OCTAVES) {
 void main() {
     float time = uTime * 0.002;
     vec2 uv = vUv;
-    vec4 prev = texture2D(tPrev, uv) * .95;
+    vec4 prev = texture2D(tPrev, uv) * .995;
     uv -= 0.5;
 
     float ratio = uResolution.x / uResolution.y;
 
     float direction = step(1., ratio);
 
-    // uv.x *= ratio;
-    // vec2 mUv = uv * vec2(ratio, 1.0);
     vec2 responsive = vec2(mix(ratio, 1.0, direction), mix(1.0, 1.0 / ratio, direction));
     vec2 mUv = uv * responsive;
 
@@ -55,14 +54,13 @@ void main() {
     // corrected_mouse = vec2(sin(time), cos(time)) * .5 * responsive;
 
     float l = length(corrected_mouse * .5 - mUv + (fbm(fract(uv - .5) * 8. + time, 1) * .1));
-    l = smoothstep(.15, 0., l);
+    l = smoothstep(.5, -0.8, l * 2.5) * (uMouseVel);
 
     float mask = smoothstep(.01, .0, l);
 
     gl_FragColor = vec4(1., 1., 1., 1.);
     gl_FragColor = vec4(current.rgb, 1.);
-    // gl_FragColor = vec4(c, 1., 1., 1.);
-    gl_FragColor = vec4(l + smoothstep(1., prev.r * .9, l), 1., 1., 1.);
-    gl_FragColor = vec4(vec3(fbm(fract(uv - .5) * 4. + time, 8)), 1.);
-    gl_FragColor = vec4(vec3(l + prev.r) * uMouseVel, 1.);
+    gl_FragColor = vec4(vec3(fbm(fract(uv - .5) * 4. - time, 8)), 1.);
+    gl_FragColor = vec4(l, l, l, 1.);
+    gl_FragColor = vec4(vec3(l + prev.r), 1.);
 }

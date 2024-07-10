@@ -87,24 +87,27 @@ class Input {
   }
 
   setCoords(x, y) {
-    if (this.timer) clearTimeout(this.timer);
     this.xTo((x / Device.viewport.width) * 2 - 1);
     this.yTo(-(y / Device.viewport.height) * 2 + 1);
-    gsap.to(this, {
-      mouseVelocity: 1,
-      duration: 0.8,
-      ease: "power2.out",
-    });
 
+    if (!this.mouseMoved) {
+      gsap.to(this, {
+        mouseVelocity: 1,
+        duration: 0.8,
+        ease: "power1.out",
+      });
+      this.mouseMoved = true;
+    }
+
+    clearTimeout(this.timer);
     this.timer = setTimeout(() => {
+      this.mouseMoved = false;
       gsap.to(this, {
         mouseVelocity: 0,
-        duration: 0.8,
-        ease: "power2.out",
+        duration: 0.4,
+        ease: "power1.out",
       });
-
-      this.mouseMoved = false;
-    }, 500);
+    }, 300);
   }
 
   onDocumentMouseMove(event) {
@@ -118,7 +121,7 @@ class Input {
       this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
       gsap.to(this, {
         mouseVelocity: 1,
-        duration: 2,
+        duration: 0.8,
         ease: "power1.out",
       });
     }
@@ -135,7 +138,7 @@ class Input {
     if (event.touches.length === 0) {
       gsap.to(this, {
         mouseVelocity: 0,
-        duration: 2,
+        duration: 0.4,
         ease: "power1.out",
       });
     }

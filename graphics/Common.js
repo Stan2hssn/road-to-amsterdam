@@ -18,6 +18,8 @@ import {
   OrthographicCamera,
   ShaderMaterial,
   Uniform,
+  RGBAFormat,
+  LinearFilter,
 } from "three";
 
 class Common {
@@ -97,6 +99,12 @@ class Common {
     this.renderTarget = new WebGLRenderTarget(
       Device.viewport.width,
       Device.viewport.height,
+      {
+        minFilter: LinearFilter,
+        magFilter: LinearFilter,
+        format: RGBAFormat,
+        anisotropy: 16,
+      },
     );
     this.targetA = this.renderTarget.clone();
     this.targetB = this.renderTarget.clone();
@@ -117,6 +125,7 @@ class Common {
         },
         uTime: { value: 0 },
         uMouseVel: new Uniform(0),
+        uShift: new Uniform(0),
       },
       vertexShader: vertex,
       fragmentShader: fboFragment,
@@ -144,6 +153,7 @@ class Common {
     this.cameraY = -Device.scrollTop;
     this.scrollContainer.style.transform = `translate3d(0, ${-Device.scrollTop}px, 0)`;
     this.camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
+    this.fboMaterial.uniforms.uShift.value = -Device.scrollTop;
   }
 
   dispose() {
