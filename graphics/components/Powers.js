@@ -7,78 +7,278 @@ import {
   MeshBasicMaterial,
   TextureLoader,
   PlaneGeometry,
+  ShaderMaterial,
+  Uniform,
+  Color,
+  BoxGeometry,
+  Vector2,
 } from "three";
 
-import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+import backgroundShader from "./glsl/background.vert";
+import backgroundFragment from "./glsl/background.frag";
+
+import glass from "/Texture/noise_light.jpg";
+import noise from "/Texture/noise_light.jpg";
+import water from "/Texture/water.png";
 
 import Common from "../Common";
+import Device from "../pure/Device";
+import Input from "../Input";
 
-import Floor from "./starter/Floor";
+import paint from "./starter/paint";
 import Cube from "./starter/Cube";
-import { materialEmissive } from "three/examples/jsm/nodes/Nodes.js";
+import { float } from "three/examples/jsm/nodes/Nodes.js";
 
 export default class {
   Starter = {};
+  Letters = {};
+
+  params = {
+    height: 200,
+    background: new Color(0xfff2e6),
+    primary: new Color(0x77bdbc),
+    secondary: new Color(0xfff2e6),
+    tertiary: new Color(0x206674),
+    fourthary: new Color(0x083947),
+  };
 
   constructor() {
     this.init();
   }
 
+  texture() {
+    this.loaderTexture = new TextureLoader();
+
+    this.textures = {
+      noise: this.loaderTexture.load(noise),
+      waterTexture: this.loaderTexture.load(water),
+      glass: this.loaderTexture.load(glass),
+    };
+  }
+
   init() {
+    this.texture();
     this.StarterGroup = new Group();
+    this.LettersGroup = new Group();
 
-    // this.Starter.floor = new Floor();
+    // this.Starter.Cube = new Cube(0, 0, 0);
 
-    this.Starter.Cube = new Cube(0, 0, 0);
-    // this.dummy = new Mesh(
-    //   new SphereGeometry(1, 32, 32),
-    //   new MeshBasicMaterial({ color: 0xff0000 }),
-    // );
+    this.plane = new Mesh(
+      new BoxGeometry(1, 1),
 
-    const loader = new FontLoader();
+      // new MeshBasicMaterial({
+      //   color: 0xffffff,
+      // }),
 
-    loader.load(
-      "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
-      function (font) {
-        const dummy = new TextGeometry("C S", {
-          font: font,
-          size: 80,
-          depth: 0.05,
-          curveSegments: 12,
-          bevelEnabled: true,
-          bevelThickness: 1,
-          bevelSize: 8,
-          bevelOffset: 0,
-          bevelSegments: 5,
-        });
+      new ShaderMaterial({
+        uniforms: {
+          uTime: new Uniform(0),
+          tLogo: {
+            value: new TextureLoader().load("/Texture/Capsens.png"),
+          },
+          uBackground: new Uniform(new Color(this.params.background)),
+        },
+        vertexShader: `
+          uniform float uTime;
+          varying vec2 vUv;
 
-        const dummyMesh = new Mesh(
-          dummy,
-          new MeshBasicMaterial({ color: 0xf2f1ed }),
-        );
+         float rand(float n){return fract(sin(n) * 43758.5453123);}
 
-        dummyMesh.scale.set(0.014, 0.014, 0.014);
-        dummyMesh.position.set(-1.2, -0.5, 0);
+          float noise(float p){
+            float fl = floor(p);
+            float fc = fract(p);
+            return mix(rand(fl), rand(fl + 1.0), fc);
+          }
 
-        Common.scene.add(dummyMesh);
-      },
+          void main() {
+            float time = uTime *.1;
+            vec3 pos = position + vec3(.5);
+            vec2 movement = vec2(cos(time), sin(time) -1.) * .1 - .05;
+            pos.xy += movement * noise(cos(time * .5) * -sin(time * .5));
+
+            vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+
+            vec4 mvPosition = viewMatrix * worldPos;
+
+            gl_Position = projectionMatrix * mvPosition;
+            vUv = uv;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D tLogo;
+
+          uniform float uTime;
+
+          uniform vec3 uBackground;
+
+          varying vec2 vUv;
+          void main() {
+          float time = uTime;
+            vec4 text = texture2D(tLogo, vUv);
+            float mask = smoothstep(0.,1., text.a);
+
+            gl_FragColor = vec4(vUv + time, 0.0, 1.0);
+            gl_FragColor = vec4((text.rgb), mask);
+            gl_FragColor = vec4(vec3(uBackground), mask );
+
+          }
+        `,
+        transparent: true,
+      }),
+    );
+
+    // this.plane.position.set(0.1, 0, 0);
+
+    this.waterCompiler = new Mesh(
+      new PlaneGeometry(this.params.height, this.params.height, 1, 1),
+      new ShaderMaterial({
+        uniforms: {
+          uTime: new Uniform(0),
+          tNoise: new Uniform(this.textures.noise),
+          tGlass: new Uniform(this.textures.glass),
+          uPrimary: new Uniform(this.params.primary),
+          uSecondary: new Uniform(this.params.secondary),
+          uThirdary: new Uniform(this.params.tertiary),
+          uFourthary: new Uniform(this.params.fourthary),
+          uBackground: new Uniform(new Color(this.params.waterCompiler)),
+          tRipples: new Uniform(this.textures.waterTexture),
+          tLogo: new Uniform(null),
+          uRes: new Uniform(
+            new Vector2(
+              Device.viewport.width,
+              Device.viewport.height,
+            ).multiplyScalar(Device.pixelRatio),
+          ),
+        },
+        vertexShader: backgroundShader,
+        fragmentShader: backgroundFragment,
+        side: 2,
+        depthTest: true,
+        depthWrite: true,
+      }),
+    );
+
+    this.paint = new paint(0, 4.4, -10, this.params);
+
+    this.waterCompiler.position.set(0, -4.4, -40);
+
+    this.dummy = new Mesh(
+      new PlaneGeometry(5, 5),
+      new MeshBasicMaterial({
+        color: 0x1111111,
+      }),
     );
 
     Object.keys(this.Starter).forEach((key) => {
       // this.StarterGroup.add(this.Starter[key].mesh);
     });
 
-    Common.scene.add(this.StarterGroup);
+    this.LettersGroup.add(this.plane);
+
+    this.dummy.position.set(0, -4, -5);
+
+    this.LettersGroup.position.set(-0.837, 1, -10.9);
+    // this.LettersGroup.position.set(0, 1, -10.9);
+    this.LettersGroup.scale.set(2, 2, 2);
+
+    Common.projectScene.add(
+      this.waterCompiler,
+      this.paint.ripples,
+      this.dummy,
+      this.LettersGroup,
+    );
   }
 
   dispose() {}
 
   render(t) {
-    Object.keys(this.Starter).forEach((key) => {
-      this.Starter[key].render(t);
-    });
+    this.paint.render(t);
+
+    this.waterCompiler.material.uniforms.uTime.value = t * 0.0001;
+    this.dummy.material.visible = false;
+    this.waterCompiler.material.visible = false;
+    this.paint.material.visible = false;
+    this.plane.material.visible = true;
+
+    // Capture the logo reflection on floor
+    Common.renderer.setRenderTarget(Common.reflectRender);
+    Common.renderer.render(Common.projectScene, Common.reflectCamera);
+    Common.reflectTexture = Common.reflectRender.texture;
+
+    // Print the reflection on the floor
+    this.paint.material.uniforms.uReflect.value = Common.reflectTexture;
+    // Capture the logo on the waterCompiler
+    this.plane.material.visible = true;
+
+    Common.renderer.setRenderTarget(Common.LogoTexture);
+    Common.renderer.render(Common.projectScene, Common.projectCamera);
+    // Print the logo on the waterCompiler
+    this.waterCompiler.material.uniforms.tLogo.value =
+      Common.LogoTexture.texture;
+    this.waterCompiler.material.visible = true;
+
+    // Capture the waterCompiler on the ripples
+    Common.renderer.setRenderTarget(Common.waterCompilerTexture);
+    Common.renderer.render(Common.projectScene, Common.projectCamera);
+
+    // Print the waterCompiler on the ripples
+    this.paint.material.uniforms.uTexture.value =
+      Common.waterCompilerTexture.texture;
+    Common.renderer.setRenderTarget(Common.RipplesTexture);
+    Common.renderer.render(Common.projectScene, Common.projectCamera);
+
+    // Print the ripples on the waterCompiler
+    this.waterCompiler.material.uniforms.tRipples.value =
+      Common.RipplesTexture.texture;
+
+    // Render the final scene
+
+    // this.plane.material.visible = false;
+    this.waterCompiler.material.visible = true;
+    this.paint.material.visible = true;
+    this.dummy.material.visible = true;
+
+    Common.renderer.setRenderTarget(null);
+    Common.renderer.render(Common.projectScene, Common.projectCamera);
   }
 
-  resize() {}
+  resize() {
+    Object.keys(this.Starter).forEach((key) => {
+      this.Starter[key].resize();
+    });
+
+    this.plane.scale.set(1, 1, 1);
+    this.waterCompiler.scale.set(1, 1, 1);
+
+    this.paint.resize();
+
+    this.waterCompiler.material.uniforms.uRes.value
+      .set(Device.viewport.width, Device.viewport.height)
+      .multiplyScalar(Device.pixelRatio);
+  }
+
+  debug(debug) {
+    const { debug: pane } = this;
+
+    debug.addBinding(this.params, "secondary", {
+      label: "Secondary",
+      min: 0,
+      max: 0xffffff,
+      color: { type: "float" },
+    });
+
+    debug.addBinding(this.params, "tertiary", {
+      label: "Tertiary",
+      min: 0,
+      max: 0xffffff,
+      color: { type: "float" },
+    });
+
+    debug.addBinding(this.params, "fourthary", {
+      label: "Fourthary",
+      min: 0,
+      max: 0xffffff,
+      color: { type: "float" },
+    });
+  }
 }

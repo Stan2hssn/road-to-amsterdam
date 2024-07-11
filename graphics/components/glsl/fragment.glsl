@@ -1,68 +1,81 @@
 uniform float uTime;
+uniform float uGlobalIor;
+
 uniform vec2 winResolution;
+
+uniform vec3 uIor;
+uniform vec3 uColor;
+uniform vec3 uBagroundColor;
+
 uniform sampler2D uTexture;
 uniform sampler2D normalTexture;
-uniform sampler2D gainTexture;
-uniform sampler2D magTexture;
-uniform vec3 uIor;
 uniform sampler2D noiseTexture;
-uniform sampler2D noiseCache;
+uniform sampler2D tWater;
 uniform sampler2D frostedTexture;
+uniform sampler2D noiseColor;
 
 varying vec3 worldNormal;
 varying vec3 eyeVector;
 varying vec2 vUv;
+varying vec3 pos;
 
 void main() {
-    vec3 ior = uIor;
 
+    float time = uTime * .1;
     vec2 uv = gl_FragCoord.xy / winResolution.xy;
     vec2 uvMap = vUv;
 
-    vec2 uvNoise = texture2D(noiseCache, uvMap).xy;
+    vec3 normalBump = texture2D(normalTexture, fract(vec2(uvMap.x, uvMap.y * .3 + time) * 10.)).xyz;
+    vec3 water = texture2D(tWater, fract(uvMap * 2. + uTime)).xyz;
+    vec3 noise = texture2D(noiseTexture, uvMap).xyz;
+    vec3 noiseColor = texture2D(noiseColor, fract(uvMap * 10.)).xyz;
 
-    vec3 normalBump = texture2D(normalTexture, uvMap).xyz;
-    vec3 gain = texture2D(gainTexture, uvMap).xyz;
-    vec3 mag = texture2D(magTexture, uvMap).xyz;
-    vec3 noise = texture2D(noiseTexture, uvMap * uvNoise).xyz;
-    // noise = texture2D(noiseTexture, uvMap).xyz;
+    vec3 normalGrain = normalBump * (noise * 10.) * water;
 
-    vec3 frosted = texture2D(frostedTexture, uvMap).xyz;
+    float smoothBlur = (noise.r * smoothstep(1., -.5, length(vec2(uv.x, uv.y * .6 + .2) - .5) * 1.));
 
-    vec3 normalGrain = (frosted * 1. - (noise));
+    vec3 normal = worldNormal * normalGrain;
 
-    vec3 normal = (worldNormal) * (normalGrain * 3.) * 3.;
+    vec3 ior = uIor * uGlobalIor;
 
-    float iorRatioRed = 1.0 / ior.r;
-    float iorRatioGreen = 1.0 / ior.g;
-    float iorRatioBlue = 1.0 / ior.b;
+    float iorRatioRed = 1. / ior.r;
+    float iorRatioGreen = 1. / ior.g;
+    float iorRatioBlue = 1. / ior.b;
 
     vec4 color = vec4(1.0);
 
-    vec3 refractVecR = refract(eyeVector, normal, iorRatioRed);
-    vec3 refractVecG = refract(eyeVector, normal, iorRatioGreen);
-    vec3 refractVecB = refract(eyeVector, normal, iorRatioBlue);
+    vec3 refractVecR = refract(eyeVector * .9, (normal), iorRatioRed);
+    vec3 refractVecG = refract(eyeVector * .9, (normal), iorRatioGreen);
+    vec3 refractVecB = refract(eyeVector * .9, (normal), iorRatioBlue);
 
-    float R = texture2D(uTexture, ((uv * 1.5) * (uvNoise - .3)) + refractVecR.xy).r;
-    float G = texture2D(uTexture, ((uv * 1.5) * (uvNoise - .3)) + refractVecG.xy).g;
-    float B = texture2D(uTexture, ((uv * 1.5) * (uvNoise - .3)) + refractVecB.xy).b;
+    vec2 newUv = (vec2(uv.x * .4 + .3, uv.y * .3 + .35));
 
-    vec4 colorTest = texture2D(uTexture, uv);
+    float R = texture2D(uTexture, newUv + refractVecR.xy).r;
+    float G = texture2D(uTexture, newUv + refractVecG.xy).g;
+    float B = texture2D(uTexture, newUv + refractVecB.xy).b;
 
-    // color.r = mix(R, 1., .2);
-    // color.g = mix(G, 1., .2);
-    // color.b = mix(B, 1., .2);
+    vec4 colorTest = texture2D(uTexture, uv * .6 + .2);
 
-    color = vec4(vec3(R, G, B), 1.);
+    vec3 colorRGB = uColor;
+    vec3 backroundColor = uBagroundColor;
 
-    color = LinearTosRGB(color);
+    vec3 noiseC = noiseColor * 1.;
+    vec4 blur = texture2D(uTexture, uv * .75 + .12);
+
+    color.r = mix(R, colorRGB.r, 2.);
+    color.g = mix(G, colorRGB.g, 2.);
+    color.b = mix(B, colorRGB.b, 2.);
+
     vec4 test = LinearTosRGB(colorTest);
+    color = LinearTosRGB(color);
 
-    // gl_FragColor = vec4(gain, 1.);
-    gl_FragColor = vec4(vec3(color.r + .1, color.g + .1, color.b), 1.);
-    gl_FragColor = vec4(vec3((uv * 1.4) * (uvNoise - .3), 1.), 1.);
-    gl_FragColor = vec4(vec3(uv, 1.), 1.);
-    // gl_FragColor = vec4((test), 1.);
-    gl_FragColor = test;
+    vec3 finalColor = mix(color.rgb, backroundColor + .1, 1. - uv.y * (noise * 2.));
+
+    gl_FragColor = vec4(finalColor, 1.);
+    gl_FragColor = LinearTosRGB(vec4(mix(colorRGB, backroundColor, 0.2) / smoothstep(0., .5, normal.b + normal.r), 1.));
+    gl_FragColor = vec4(vec3(R, G, B), 1.);
+    gl_FragColor = colorTest;
+    gl_FragColor = vec4(normal, 1.);
     gl_FragColor = color;
+    gl_FragColor = LinearTosRGB(vec4(finalColor, 1.));
 }

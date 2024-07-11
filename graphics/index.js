@@ -16,6 +16,11 @@ export default class {
     this.resize();
     this.x = this.resize.bind(this);
 
+    if (window.location.hostname === "localhost") {
+      Common.debug();
+      this.output.debug();
+    }
+
     window.addEventListener("resize", this.x, false);
   }
 
