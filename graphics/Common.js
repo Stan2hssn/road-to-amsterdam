@@ -18,10 +18,10 @@ class Common {
   // create a scene and the parameters for the scene
   scene = new Scene();
   params = {
-    sceneColor: 0xdfdbd1,
+    sceneColor: 0xe3e2e2,
     cameraFov: 50,
     cameraNear: 0.01,
-    cameraFar: 100.0,
+    cameraFar: 200.0,
   };
 
   constructor() {
@@ -92,6 +92,7 @@ class Common {
     // this.reflectCamera.rotation.x = Math.PI / 2;
 
     this.projectScene = new Scene();
+    this.projectScene.background = new Color(this.params.sceneColor);
     this.projectCamera = new PerspectiveCamera(
       this.params.cameraFov,
       Device.viewport.width / Device.viewport.height,
@@ -134,15 +135,10 @@ class Common {
   }
 
   render(t) {
-    this.projectCamera.lookAt(0, Device.cameraY, -10);
-
     const { x, y } = Input.coords;
 
-    this.projectCameraX = x * 2;
-    this.projectCameraY = Device.cameraY + 4;
-    this.projectCameraZ = 4 + x * 4;
-
-    this.projectCamera.position.set(x, Device.cameraY + y, y);
+    this.projectCamera.position.set(x * 2, Input.cameraY + y - 0.25, -y * 2);
+    this.projectCamera.lookAt(0, Input.cameraY, -10);
   }
 
   dispose() {

@@ -19,7 +19,7 @@ import backgroundFragment from "./glsl/background.frag";
 
 import glass from "/Texture/noise_light.jpg";
 import noise from "/Texture/noise_light.jpg";
-import water from "/Texture/water.png";
+import water from "/Texture/normal_water.webp";
 
 import Common from "../Common";
 import Device from "../pure/Device";
@@ -34,12 +34,18 @@ export default class {
   Letters = {};
 
   params = {
-    height: 200,
+    height: 30,
     background: new Color(0xfff2e6),
-    primary: new Color(0x77bdbc),
-    secondary: new Color(0xfff2e6),
-    tertiary: new Color(0x206674),
+    primary: new Color(0x459392),
+    secondary: new Color(0x0c4e68),
+    tertiary: new Color(0x0c4e68),
     fourthary: new Color(0x083947),
+    uIor: {
+      x: 1.17,
+      y: 1.15,
+      z: 1.14,
+    },
+    uGlobalIor: 1,
   };
 
   constructor() {
@@ -127,40 +133,42 @@ export default class {
       }),
     );
 
-    // this.plane.position.set(0.1, 0, 0);
+    this.waterCompilerMaterial = new ShaderMaterial({
+      uniforms: {
+        uTime: new Uniform(0),
+        tNoise: new Uniform(this.textures.noise),
+        tGlass: new Uniform(this.textures.waterTexture),
+        uPrimary: new Uniform(this.params.primary),
+        uSecondary: new Uniform(this.params.secondary),
+        uThirdary: new Uniform(this.params.tertiary),
+        uFourthary: new Uniform(this.params.fourthary),
+        uBackground: new Uniform(new Color(this.params.waterCompiler)),
+        tRipples: new Uniform(this.textures.waterTexture),
+        tLogo: new Uniform(null),
+        uRes: new Uniform(
+          new Vector2(
+            Device.viewport.width,
+            Device.viewport.height,
+          ).multiplyScalar(Device.pixelRatio),
+        ),
+      },
+      vertexShader: backgroundShader,
+      fragmentShader: backgroundFragment,
+      side: 2,
+      depthTest: true,
+      depthWrite: true,
+    });
 
     this.waterCompiler = new Mesh(
-      new PlaneGeometry(this.params.height, this.params.height, 1, 1),
-      new ShaderMaterial({
-        uniforms: {
-          uTime: new Uniform(0),
-          tNoise: new Uniform(this.textures.noise),
-          tGlass: new Uniform(this.textures.glass),
-          uPrimary: new Uniform(this.params.primary),
-          uSecondary: new Uniform(this.params.secondary),
-          uThirdary: new Uniform(this.params.tertiary),
-          uFourthary: new Uniform(this.params.fourthary),
-          uBackground: new Uniform(new Color(this.params.waterCompiler)),
-          tRipples: new Uniform(this.textures.waterTexture),
-          tLogo: new Uniform(null),
-          uRes: new Uniform(
-            new Vector2(
-              Device.viewport.width,
-              Device.viewport.height,
-            ).multiplyScalar(Device.pixelRatio),
-          ),
-        },
-        vertexShader: backgroundShader,
-        fragmentShader: backgroundFragment,
-        side: 2,
-        depthTest: true,
-        depthWrite: true,
-      }),
+      new PlaneGeometry(200, 100, 1, 1),
+      this.waterCompilerMaterial,
     );
 
-    this.paint = new paint(0, 4.4, -10, this.params);
+    this.paint = new paint(0, -10, -30, this.params);
 
-    this.waterCompiler.position.set(0, -4.4, -40);
+    this.waterCompiler.position.set(0, 0, -60);
+
+    this.waterCompiler.rotation.set(0, 0, 0);
 
     this.dummy = new Mesh(
       new PlaneGeometry(5, 5),
@@ -169,24 +177,18 @@ export default class {
       }),
     );
 
-    Object.keys(this.Starter).forEach((key) => {
-      // this.StarterGroup.add(this.Starter[key].mesh);
-    });
+    // Object.keys(this.Starter).forEach((key) => {
+    //   // this.StarterGroup.add(this.Starter[key].mesh);
+    // });
 
     this.LettersGroup.add(this.plane);
 
     this.dummy.position.set(0, -4, -5);
 
-    this.LettersGroup.position.set(-0.837, 1, -10.9);
-    // this.LettersGroup.position.set(0, 1, -10.9);
+    this.LettersGroup.position.set(0, 1, -10.9);
     this.LettersGroup.scale.set(2, 2, 2);
 
-    Common.projectScene.add(
-      this.waterCompiler,
-      this.paint.ripples,
-      this.dummy,
-      this.LettersGroup,
-    );
+    Common.projectScene.add(this.waterCompiler, this.paint.ripples);
   }
 
   dispose() {}
@@ -195,48 +197,18 @@ export default class {
     this.paint.render(t);
 
     this.waterCompiler.material.uniforms.uTime.value = t * 0.0001;
-    this.dummy.material.visible = false;
-    this.waterCompiler.material.visible = false;
-    this.paint.material.visible = false;
-    this.plane.material.visible = true;
 
-    // Capture the logo reflection on floor
-    Common.renderer.setRenderTarget(Common.reflectRender);
-    Common.renderer.render(Common.projectScene, Common.reflectCamera);
-    Common.reflectTexture = Common.reflectRender.texture;
-
-    // Print the reflection on the floor
-    this.paint.material.uniforms.uReflect.value = Common.reflectTexture;
-    // Capture the logo on the waterCompiler
-    this.plane.material.visible = true;
-
-    Common.renderer.setRenderTarget(Common.LogoTexture);
-    Common.renderer.render(Common.projectScene, Common.projectCamera);
-    // Print the logo on the waterCompiler
-    this.waterCompiler.material.uniforms.tLogo.value =
-      Common.LogoTexture.texture;
     this.waterCompiler.material.visible = true;
+    this.paint.ripples.visible = false;
 
-    // Capture the waterCompiler on the ripples
-    Common.renderer.setRenderTarget(Common.waterCompilerTexture);
-    Common.renderer.render(Common.projectScene, Common.projectCamera);
-
-    // Print the waterCompiler on the ripples
-    this.paint.material.uniforms.uTexture.value =
-      Common.waterCompilerTexture.texture;
     Common.renderer.setRenderTarget(Common.RipplesTexture);
     Common.renderer.render(Common.projectScene, Common.projectCamera);
 
-    // Print the ripples on the waterCompiler
-    this.waterCompiler.material.uniforms.tRipples.value =
+    this.paint.ripples.material.uniforms.uReflect.value =
       Common.RipplesTexture.texture;
 
-    // Render the final scene
-
-    // this.plane.material.visible = false;
-    this.waterCompiler.material.visible = true;
-    this.paint.material.visible = true;
-    this.dummy.material.visible = true;
+    this.waterCompiler.material.visible = false;
+    this.paint.ripples.visible = true;
 
     Common.renderer.setRenderTarget(null);
     Common.renderer.render(Common.projectScene, Common.projectCamera);

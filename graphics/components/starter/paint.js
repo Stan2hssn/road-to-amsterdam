@@ -10,11 +10,9 @@ import {
   SphereGeometry,
 } from "three";
 
-import noise from "/Texture/glass.png";
-import water from "/Texture/water.png";
-import reflect from "/Texture/reflect.png";
-import Hdri from "/Texture/hdri.jpg";
-import Hdri2 from "/Texture/hdri2.webp";
+import noise from "/Texture/normal_water.webp";
+import water from "/Texture/reflect.webp";
+import hdri from "/Texture/hdri.jpg";
 
 import fragment from "../glsl/backgroundFloor.frag";
 import vertex from "../glsl/backgroundFloor.vert";
@@ -23,7 +21,7 @@ import { TextureLoader } from "three";
 
 import Common from "../../Common";
 import Device from "../../pure/Device";
-import Powers from "../Powers";
+import { Vector3 } from "three";
 
 export default class {
   constructor(posX, posY, posZ, params) {
@@ -37,25 +35,30 @@ export default class {
     this.textures = {
       noise: this.loaderTexture.load(noise),
       waterTexture: this.loaderTexture.load(water),
-      reflectTexture: this.loaderTexture.load(reflect),
-      hdri: this.loaderTexture.load(Hdri),
-      hdri2: this.loaderTexture.load(Hdri2),
+      hdri: this.loaderTexture.load(hdri),
     };
   }
 
   init(posX = 0, posY = 0, posZ = 0) {
     this.texture();
-    this.ripplesGeometry = new PlaneGeometry(130, 50, 100, 100);
+    this.ripplesGeometry = new PlaneGeometry(120, 60, 1, 1);
 
     this.material = new ShaderMaterial({
       uniforms: {
+        uIor: new Uniform(
+          new Vector3(
+            this.params.uIor.x,
+            this.params.uIor.y,
+            this.params.uIor.z,
+          ),
+        ),
+        uGlobalIor: new Uniform(this.params.uGlobalIor),
         uTexture: new Uniform(Common.reflectTexture),
-        uReflect: new Uniform(this.textures.reflectTexture),
         uTime: new Uniform(0),
         tNoise: new Uniform(this.textures.noise),
         tWater: new Uniform(this.textures.waterTexture),
         tHdri: new Uniform(this.textures.hdri),
-        tHdri2: new Uniform(this.textures.hdri2),
+        uReflect: new Uniform(Common.reflectTexture),
         uPrimary: new Uniform(this.params.primary),
         uSecondary: new Uniform(this.params.secondary),
         uThirdary: new Uniform(this.params.tertiary),
@@ -75,22 +78,13 @@ export default class {
     });
 
     this.ripples = new Mesh(this.ripplesGeometry, this.material);
-    this.sun = new Mesh(
-      new SphereGeometry(1, 11, 11),
-      new MeshBasicMaterial({
-        color: 0xffffff,
-      }),
-    );
-    this.wall = new Mesh(this.wallGeometry, this.material);
 
-    this.sun.position.set(0, 10, -8);
-
-    this.wall.position.set(0 + posX, -this.params.height / 2 + posY, 0 + posZ);
+    // this.wall.position.set(0 + posX, -this.params.height / 2 + posY, 0 + posZ);
 
     // this.wall.rotation.set(Math.PI / , 0, 0);
 
     this.ripples.position.set(posX, posY, posZ);
-    this.ripples.rotation.set(Math.PI / 2, Math.PI, -Math.PI);
+    // this.ripples.rotation.set(Math.PI / 4, 0, 0);
   }
 
   dispose() {

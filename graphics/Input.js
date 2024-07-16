@@ -15,16 +15,17 @@ class Input {
     this.currentScroll = 0;
     this.previousScroll = 0;
     this.isScrolling = false;
+    this.cameraY = 0;
   }
 
   init() {
     this.xTo = gsap.quickTo(this.coords, "x", {
-      duration: 0.3,
+      duration: 0.6,
       ease: "power2.out",
     });
 
     this.yTo = gsap.quickTo(this.coords, "y", {
-      duration: 0.3,
+      duration: 0.6,
       ease: "power2.out",
     });
 
@@ -55,7 +56,7 @@ class Input {
     this.isScrolling = true;
     this.currentScroll = event.deltaY;
     this.scroll = this.scroll + this.currentScroll;
-    Device.cameraY = -this.scroll / 200;
+    this.cameraY = -this.scroll / 100;
     this.previousScroll = this.scroll;
 
     this.timer = setTimeout(() => {
@@ -71,6 +72,8 @@ class Input {
 
     this.mouseMoved = true;
     this.timer = setTimeout(() => {
+      // this.xTo(0);
+      // this.yTo(0);
       this.mouseMoved = false;
     }, 100);
   }
