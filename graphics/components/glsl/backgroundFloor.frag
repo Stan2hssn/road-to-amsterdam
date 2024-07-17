@@ -4,8 +4,6 @@ uniform float uGlobalIor;
 uniform vec2 uResolution;
 
 uniform sampler2D tNoise;
-uniform sampler2D tWater;
-uniform sampler2D tHdri;
 
 uniform sampler2D uTexture;
 uniform sampler2D uReflect;
@@ -19,7 +17,6 @@ uniform vec3 uFourthary;
 uniform vec3 uBackground;
 
 varying vec2 vUv;
-varying vec3 pos;
 
 #define PI 3.14159265359
 
@@ -110,11 +107,13 @@ void main() {
     float direction = step(1., ratio);
     vec2 responsive = vec2(mix(ratio, 1.0, direction), mix(1.0, 1.0 / ratio, direction));
 
-    vec4 noiseTexture = texture2D(tNoise, fract(uv * vec2(.5, 1.) * 2.));
+    vec4 noiseTexture = texture2D(tNoise, fract(uv * vec2(.5, 1.) * 3. * (1. + fbm(uv * .1 + time) * .2)));
 
-    vec4 reflection = texture2D(uReflect, winUv + (noiseTexture.r - noiseTexture.g));
-    // reflection = texture2D(uReflect, winUv);
+    vec4 reflection = texture2D(uReflect, winUv * (.5 + noiseTexture.rg));
+
+    reflection = LinearTosRGB(reflection);
 
     gl_FragColor = noiseTexture;
+    gl_FragColor = vec4(vec3(winUv, 1.), 1.);
     gl_FragColor = reflection;
 }

@@ -5,6 +5,7 @@ import gsap from "gsap";
 class Input {
   constructor() {
     this.coords = new Vector2();
+    this.camZ = 0;
     this.mouseMoved = false;
     this.prevCoords = new Vector2();
     this.delta = new Vector2();
@@ -27,6 +28,11 @@ class Input {
     this.yTo = gsap.quickTo(this.coords, "y", {
       duration: 0.6,
       ease: "power2.out",
+    });
+
+    this.zTo = gsap.quickTo(this, "camZ", {
+      duration: 2,
+      ease: "power1.out",
     });
 
     this.scrollTo = gsap.quickTo(this, "scrollTop", {
@@ -69,6 +75,7 @@ class Input {
 
     this.xTo((x / Device.viewport.width) * 2 - 1);
     this.yTo(-(y / Device.viewport.height) * 2 + 1);
+    this.zTo(Math.abs((x / Device.viewport.width) * 2 - 1));
 
     this.mouseMoved = true;
     this.timer = setTimeout(() => {
@@ -84,14 +91,12 @@ class Input {
 
   onDocumentTouchStart(event) {
     if (event.touches.length === 1) {
-      event.preventDefault();
       this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
     }
   }
 
   onDocumentTouchMove(event) {
     if (event.touches.length === 1) {
-      event.preventDefault();
       this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
     }
   }

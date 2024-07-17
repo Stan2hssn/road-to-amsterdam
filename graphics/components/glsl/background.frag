@@ -3,8 +3,6 @@ uniform vec2 uRes;
 
 uniform sampler2D tNoise;
 uniform sampler2D tGlass;
-uniform sampler2D tRipples;
-uniform sampler2D tLogo;
 
 uniform vec3 uPrimary;
 uniform vec3 uSecondary;
@@ -14,7 +12,6 @@ uniform vec3 uFourthary;
 uniform vec3 uBackground;
 
 varying vec2 vUv;
-varying vec2 pos;
 
 #define PI 3.14159265359
 
@@ -113,20 +110,11 @@ void main() {
 
     vec4 noiseTexture = texture2D(tNoise, uv);
 
-    vec3 caustics = mix(uSecondary, uThirdary, step(.6, uv.y + .2));
-
     vec4 previewBackground = texture2D(tGlass, fract(uv * 1.8 - .33));
 
-    float wave = cos((((uv.x - (uv.y * .3) - uTime) + (fbm(uv) * .1)) * PI * 2.) * (7. * responsive.y)) * noiseTexture.r * fbm(uv);
-
-    float sun = 1. - length(vec2(uv.x - .5, uv.y - .95)) * 3.;
-    sun = smoothstep(0.01, .01, sun * fbm(uv - vec2(uTime, 0.)));
-
-    vec3 sunColor = mix(vec3(0.89, 0.886, 0.886), vec3(0.757, 0.753, 0.737), sun);
+    float wave = smoothstep(0.4, 1., fbm(uv * 10. - uTime * 2.));
 
     vec3 color = mix(uSecondary, uPrimary, smoothstep(0., 1., wave));
-    color = mix(color, sunColor, sun);
 
-    gl_FragColor = vec4(vec3(sun), 1.);
-    gl_FragColor = LinearTosRGB(vec4(color, 1.));
+    gl_FragColor = vec4(color, 1.);
 }

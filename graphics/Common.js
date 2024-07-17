@@ -70,7 +70,12 @@ class Common {
       Device.viewport.height,
     );
 
-    this.LogoTexture = new WebGLRenderTarget(
+    this.frontSide.LogoTexture = new WebGLRenderTarget(
+      Device.viewport.width,
+      Device.viewport.height,
+    );
+
+    this.backSide.LogoTexture = new WebGLRenderTarget(
       Device.viewport.width,
       Device.viewport.height,
     );
@@ -112,9 +117,7 @@ class Common {
   }
 
   init({ canvas }) {
-    this.projectCameraX = 0;
-    this.projectCameraY = 4;
-    this.projectCameraZ = 0;
+    this.projectCameraZ = -8;
 
     this.renderer = new WebGLRenderer({
       canvas: canvas,
@@ -136,9 +139,12 @@ class Common {
 
   render(t) {
     const { x, y } = Input.coords;
+    const z = Input.camZ;
 
-    this.projectCamera.position.set(x * 2, Input.cameraY + y - 0.25, -y * 2);
-    this.projectCamera.lookAt(0, Input.cameraY, -10);
+    this.projectCamera.position.set(-x * 2, Input.cameraY + -y - 0.25, -z * 2);
+    // console.log("this.projectCamera.position", this.projectCamera.position);
+
+    this.projectCamera.lookAt(0, Input.cameraY, this.projectCameraZ);
   }
 
   dispose() {

@@ -22,10 +22,10 @@ import water from "/Texture/water.webp";
 import noise from "/Texture/noise_light.jpg";
 import noise_color from "/Texture/crystal_texture.jpg";
 
-import vertexShader from "../glsl/vertex.glsl";
-import fragmentShader from "../glsl/fragment.glsl";
-import Common from "../../Common";
-import Device from "../../pure/Device";
+import vertexShader from "./glsl/vertex.glsl";
+import fragmentShader from "./glsl/fragment.glsl";
+import Common from "../Common";
+import Device from "../pure/Device";
 
 import { GLTFLoader } from "three/examples/jsm/Addons.js";
 
