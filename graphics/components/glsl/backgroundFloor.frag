@@ -81,12 +81,12 @@ float fbmNoise(in vec2 st) {
         (d - b) * u.x * u.y;
 }
 
-#define OCTAVES 24
+#define OCTAVES 8
 float fbm(in vec2 st) {
     // Initial values
-    float value = 0.0;
+    float value = 1.0;
     float amplitude = .5;
-    float frequency = 0.;
+    float frequency = 2.;
     //
     // Loop of octaves
     for(int i = 0; i < OCTAVES; i++) {
@@ -107,9 +107,10 @@ void main() {
     float direction = step(1., ratio);
     vec2 responsive = vec2(mix(ratio, 1.0, direction), mix(1.0, 1.0 / ratio, direction));
 
-    vec4 noiseTexture = texture2D(tNoise, fract(uv * vec2(.5, 1.) * 3. * (1. + fbm(uv * .1 + time) * .2)));
+    vec4 noiseTexture = texture2D(tNoise, fract(uv * vec2(.5, 1.) * 3. * (1. + fbm(uv + time) * .35)));
 
-    vec4 reflection = texture2D(uReflect, winUv * (.5 + noiseTexture.rg));
+    vec4 reflection = texture2D(uReflect, winUv * (.3 + noiseTexture.rg));
+    // reflection = texture2D(uReflect, winUv);
 
     reflection = LinearTosRGB(reflection);
 

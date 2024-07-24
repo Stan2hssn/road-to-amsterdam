@@ -26,12 +26,12 @@ class Input {
     });
 
     this.yTo = gsap.quickTo(this.coords, "y", {
-      duration: 0.6,
+      duration: 1,
       ease: "power2.out",
     });
 
     this.zTo = gsap.quickTo(this, "camZ", {
-      duration: 2,
+      duration: 1,
       ease: "power1.out",
     });
 
@@ -62,7 +62,7 @@ class Input {
     this.isScrolling = true;
     this.currentScroll = event.deltaY;
     this.scroll = this.scroll + this.currentScroll;
-    this.cameraY = -this.scroll / 100;
+    this.cameraY = -this.scroll / 300;
     this.previousScroll = this.scroll;
 
     this.timer = setTimeout(() => {

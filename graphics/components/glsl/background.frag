@@ -112,9 +112,9 @@ void main() {
 
     vec4 previewBackground = texture2D(tGlass, fract(uv * 1.8 - .33));
 
-    float wave = smoothstep(0.4, 1., fbm(uv * 10. - uTime * 2.));
+    float wave = smoothstep(0.4, 1., fbm(uv * 50. - uTime * 4.));
 
-    vec3 color = mix(uSecondary, uPrimary, smoothstep(0., 1., wave));
+    vec3 color = mix(uSecondary, uPrimary, wave);
 
     gl_FragColor = vec4(color, 1.);
 }

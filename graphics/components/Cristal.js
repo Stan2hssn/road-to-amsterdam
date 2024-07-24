@@ -34,27 +34,24 @@ import { Pane } from "tweakpane";
 export default class {
   params = {
     basic: 0,
-    uIor: {
-      x: 1.17,
-      y: 1.15,
-      z: 1.14,
-    },
-    uGlobalIor: 1,
-    gltfScale: 0.6,
+    uLight: new Vector3(0, 1.3, -5),
+    uShininess: 30,
+    uDiffuseness: 0.2,
+    uIor: new Vector3(1.107, 1.105, 1.104),
+    uGlobalIor: 0.94,
+    gltfScale: 0.4,
+    // gltfScale: 3,
     position: {
       x: 0,
       y: 0,
       z: 0,
     },
-    primaryColor: "#029E93",
+    primaryColor: "#1985ad",
     backgroudColor: Common.scene.background,
   };
 
   constructor(posX, posY, posZ) {
     this.pane = new Pane();
-
-    this.frontTexture = null;
-    this.backTexture = null;
 
     this.modelLoader = new GLTFLoader();
     this.loader = new TextureLoader();
@@ -62,7 +59,7 @@ export default class {
     this.textures = {
       normal: this.loader.load(rugged),
       noise: this.loader.load(noise),
-      noise_color: this.loader.load(noise_color),
+      noiseColor: this.loader.load(noise_color),
       waterTexture: this.loader.load(water),
     };
 
@@ -78,40 +75,38 @@ export default class {
     this.material = new ShaderMaterial({
       uniforms: {
         uTime: new Uniform(0),
-        winResolution: new Uniform(
+        uRes: new Uniform(
           new Vector2(
             Device.viewport.width,
             Device.viewport.height,
           ).multiplyScalar(Device.pixelRatio),
         ),
         uTexture: new Uniform(null),
-        uIor: new Uniform(
-          new Vector3(
-            this.params.uIor.x,
-            this.params.uIor.y,
-            this.params.uIor.z,
-          ),
-        ),
+        uIor: new Uniform(this.params.uIor),
+        uLight: new Uniform(this.params.uLight),
+        uShininess: new Uniform(this.params.uShininess),
+        uDiffuseness: new Uniform(this.params.uDiffuseness),
         normalTexture: new Uniform(this.textures.normal),
         noiseTexture: new Uniform(this.textures.noise),
-        noiseColor: new Uniform(this.textures.noise_color),
+        noiseColor: new Uniform(this.textures.noiseColor),
         tWater: new Uniform(this.textures.waterTexture),
         uGlobalIor: new Uniform(this.params.uGlobalIor),
         uColor: new Uniform(new Color(this.params.primaryColor)),
         uBagroundColor: new Uniform(new Color(this.params.backgroudColor)),
+        uTransmission: new Uniform(0),
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       // wireframe: true,
     });
 
-    this.modelLoader.load("/Models/Rock1.glb", (gltf) => {
+    this.modelLoader.load("/Models/Rock.glb", (gltf) => {
       gltf.scene.scale.set(
         this.params.gltfScale,
         this.params.gltfScale,
         this.params.gltfScale,
       );
-      // gltf.scene.rotation.set(0, 0, -0.3);
+      gltf.scene.rotation.set(0, Math.PI, 0);
 
       gltf.scene.position.set(
         this.params.position.x,
@@ -133,13 +128,51 @@ export default class {
     // this.geometry = new IcosahedronGeometry(2);
     // this.geometry = new DodecahedronGeometry(2, 0);
     // this.geometry = new BoxGeometry(3, 3, 3);
-    // this.geometry = new PlaneGeometry(3, 3);
+    this.geometry = new PlaneGeometry(3, 2);
 
     const { basic } = this.params;
 
-    this.mesh = new Mesh(this.geometry, this.material);
+    this.mesh = new Mesh(
+      this.geometry,
+      new ShaderMaterial({
+        uniforms: {
+          uTime: new Uniform(0),
+          uRes: new Uniform(
+            new Vector2(
+              Device.viewport.width,
+              Device.viewport.height,
+            ).multiplyScalar(Device.pixelRatio),
+          ),
+          uTexture: new Uniform(null),
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform vec2 uRes;
+          uniform sampler2D uTexture;
+          varying vec2 vUv;
+          void main() {
+            vec2 uv = vUv;
+            vec4 color = texture2D(uTexture, uv);
 
-    this.mesh.position.set(posX, posY, posZ);
+            color = LinearTosRGB(color);
+
+            gl_FragColor = color;
+          }
+        `,
+        // wireframe: true,
+      }),
+    );
+
+    this.mesh.position.set(posX - 2, posY - 1, posZ + 2);
+
+    Common.scene.add(this.mesh);
   }
 
   dispose() {
@@ -148,43 +181,13 @@ export default class {
   }
 
   render(t) {
-    if (t * 0.0001 < 0.1) {
-      return;
-    }
-    this.material.uniforms.uTime.value = t * 0.0001;
-
-    this.gltf.rotation.y = t * 0.0001;
-
-    this.mesh.visible = false;
-    this.gltf.visible = false;
-
-    Common.renderer.setRenderTarget(Common.backSide.fbo);
-    Common.renderer.render(Common.scene, Common.camera);
-
-    this.fboTexture = Common.backSide.fbo.texture;
-    this.material.uniforms.uTexture.value = this.fboTexture;
-
-    this.material.side = BackSide;
-
-    this.mesh.visible = true;
-    this.gltf.visible = true;
-
-    Common.renderer.setRenderTarget(Common.frontSide.fbo);
-    Common.renderer.render(Common.scene, Common.camera);
-
-    this.fboTexture = Common.frontSide.fbo.texture;
-    this.material.uniforms.uTexture.value = this.fboTexture;
-    this.material.side = FrontSide;
-
-    Common.renderer.setRenderTarget(null);
-    Common.renderer.render(Common.scene, Common.camera);
+    this.material.uniforms.uTime.value = t * 0.001;
   }
 
   resize() {
-    this.material.uniforms.winResolution.value = new Vector2(
-      Device.viewport.width,
-      Device.viewport.height,
-    ).multiplyScalar(Device.pixelRatio);
+    this.material.uniforms.uRes.value
+      .set(Device.viewport.width, Device.viewport.height)
+      .multiplyScalar(Device.pixelRatio);
   }
 
   debug() {
@@ -192,20 +195,12 @@ export default class {
 
     this.debug = this.pane.addFolder({ title: "Scene", expanded: true });
 
-    this.debug
-      .addBinding(this.params, "uIor", {
-        label: "Progress",
-        step: 0.01,
-        min: 0,
-        max: 2,
-      })
-      .on("change", (value) => {
-        this.material.uniforms.uIor.value = new Vector3(
-          this.params.uIor.x,
-          this.params.uIor.y,
-          this.params.uIor.z,
-        );
-      });
+    this.debug.addBinding(this.params, "uIor", {
+      label: "uIor",
+      min: 0,
+      max: 2,
+      color: { type: "vec3" },
+    });
 
     this.debug
       .addBinding(this.params, "uGlobalIor", {
@@ -223,7 +218,7 @@ export default class {
         label: "gltf scale",
         step: 0.01,
         min: 0,
-        max: 2,
+        max: 10,
       })
       .on("change", (value) => {
         this.gltf.scale.set(
@@ -246,6 +241,33 @@ export default class {
           this.params.position.y,
           this.params.position.z,
         );
+      });
+
+    this.debug.addBinding(this.params, "uLight", {
+      label: "Light",
+      min: -10,
+      max: 10,
+      // color: { type: "float" },
+    });
+
+    this.debug
+      .addBinding(this.params, "uShininess", {
+        label: "Shininess",
+        min: 0,
+        max: 100,
+      })
+      .on("change", (value) => {
+        this.material.uniforms.uShininess.value = this.params.uShininess;
+      });
+
+    this.debug
+      .addBinding(this.params, "uDiffuseness", {
+        label: "Diffuseness",
+        min: 0,
+        max: 1,
+      })
+      .on("change", (value) => {
+        this.material.uniforms.uDiffuseness.value = this.params.uDiffuseness;
       });
   }
 }
