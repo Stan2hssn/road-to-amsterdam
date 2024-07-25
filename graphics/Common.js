@@ -35,33 +35,7 @@ class Common {
     return camera;
   }
 
-  createRenderTarget() {
-    return new WebGLRenderTarget(
-      Device.viewport.width,
-      Device.viewport.height,
-      {
-        minFilter: LinearFilter,
-        magFilter: LinearFilter,
-        format: RGBAFormat,
-      },
-    );
-  }
-
   setupFbo() {
-    this.targets = {
-      frontSide: {
-        Cristal: this.createRenderTarget(),
-        LogoTexture: this.createRenderTarget(),
-      },
-      backSide: {
-        Cristal: this.createRenderTarget(),
-        LogoTexture: this.createRenderTarget(),
-      },
-      projectRender: this.createRenderTarget(),
-      bubblesRender: this.createRenderTarget(),
-      ripplesTexture: this.createRenderTarget(),
-    };
-
     this.reflectCamera = this.createCamera();
     this.reflectCamera.position.set(-0.2, 30, -8.9);
     this.reflectCamera.lookAt(-0.2, 0, -8.9);
@@ -100,12 +74,8 @@ class Common {
     const { x, y } = Input.coords;
     const z = Input.camZ;
 
-    this.projectCamera.position.set(
-      -x * 6,
-      Input.cameraY * 2 - y - 0.5,
-      -z * 2,
-    );
-    this.projectCamera.lookAt(0, Input.cameraY * 2 - 0.5, this.projectCameraZ);
+    this.projectCamera.position.set(-x * 6, Input.cameraY - y - 0.5, -z * 2);
+    this.projectCamera.lookAt(0, Input.cameraY - 0.5, this.projectCameraZ);
 
     this.camera.position.set(-x, Input.cameraY - y - 0.5, -z + this.cameraZ);
     this.camera.lookAt(0, Input.cameraY, 0);
@@ -113,10 +83,6 @@ class Common {
 
   dispose() {
     this.renderer.dispose();
-  }
-
-  resizeRenderTarget(target) {
-    target.setSize(Device.viewport.width, Device.viewport.height);
   }
 
   resize() {
@@ -127,19 +93,10 @@ class Common {
     this.camera.aspect = Device.viewport.width / Device.viewport.height;
     this.projectCamera.aspect = Device.viewport.width / Device.viewport.height;
 
-    const resizeTargets = (target) => {
-      if (target instanceof WebGLRenderTarget) {
-        this.resizeRenderTarget(target);
-      } else if (typeof target === "object") {
-        Object.values(target).forEach(resizeTargets);
-      }
-    };
-
-    Object.values(this.targets).forEach(resizeTargets);
-
     this.camera.updateProjectionMatrix();
     this.projectCamera.updateProjectionMatrix();
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);
+    this.renderer.setPixelRatio(Device.pixelRatio);
   }
 
   debug() {}

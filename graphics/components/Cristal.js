@@ -34,12 +34,12 @@ import { Pane } from "tweakpane";
 export default class {
   params = {
     basic: 0,
-    uLight: new Vector3(0, 1.3, -5),
-    uShininess: 30,
+    uLight: new Vector3(0, 7.3, -5),
+    uShininess: 40,
     uDiffuseness: 0.2,
     uIor: new Vector3(1.107, 1.105, 1.104),
     uGlobalIor: 0.94,
-    gltfScale: 0.4,
+    gltfScale: 0.8,
     // gltfScale: 3,
     position: {
       x: 0,
@@ -75,7 +75,7 @@ export default class {
     this.material = new ShaderMaterial({
       uniforms: {
         uTime: new Uniform(0),
-        uRes: new Uniform(
+        uResolution: new Uniform(
           new Vector2(
             Device.viewport.width,
             Device.viewport.height,
@@ -120,7 +120,6 @@ export default class {
           this.gltf = child;
         }
       });
-
       Common.scene.add(gltf.scene);
     });
 
@@ -137,7 +136,7 @@ export default class {
       new ShaderMaterial({
         uniforms: {
           uTime: new Uniform(0),
-          uRes: new Uniform(
+          uResolution: new Uniform(
             new Vector2(
               Device.viewport.width,
               Device.viewport.height,
@@ -154,7 +153,7 @@ export default class {
         `,
         fragmentShader: `
           uniform float uTime;
-          uniform vec2 uRes;
+          uniform vec2 uResolution;
           uniform sampler2D uTexture;
           varying vec2 vUv;
           void main() {
@@ -172,7 +171,7 @@ export default class {
 
     this.mesh.position.set(posX - 2, posY - 1, posZ + 2);
 
-    Common.scene.add(this.mesh);
+    // Common.scene.add(this.mesh);
   }
 
   dispose() {
@@ -185,7 +184,7 @@ export default class {
   }
 
   resize() {
-    this.material.uniforms.uRes.value
+    this.material.uniforms.uResolution.value
       .set(Device.viewport.width, Device.viewport.height)
       .multiplyScalar(Device.pixelRatio);
   }

@@ -6,7 +6,7 @@ uniform float uShininess;
 uniform float uDiffuseness;
 uniform vec3 uLight;
 
-uniform vec2 uRes;
+uniform vec2 uResolution;
 
 uniform vec3 uIor;
 uniform vec3 uColor;
@@ -79,18 +79,18 @@ float specular(vec3 light, float shiniess, float diffuseness) {
 
 void main() {
     float time = uTime * .1;
-    vec2 uv = gl_FragCoord.xy / uRes.xy;
+    vec2 uv = gl_FragCoord.xy / uResolution.xy;
     vec2 uvMap = vUv;
 
-    float ratio = uRes.x / uRes.y;
+    float ratio = uResolution.x / uResolution.y;
     float direction = step(1., ratio);
     vec2 responsive = vec2(mix(ratio, 1.0, direction), mix(1.0, 1.0 / ratio, direction));
 
     vec3 water = texture2D(tWater, fract(uvMap * 2. + time)).xyz;
     vec3 noise = texture2D(noiseTexture, uvMap).xyz;
-    vec3 noiseColor = texture2D(noiseColor, fract(uvMap * 2.)).xyz;
+    vec3 noiseColor = texture2D(noiseColor, fract(uvMap * 2. + time)).xyz;
 
-    vec3 normalGrain = noiseColor + water;
+    float normalGrain = fbm(uvMap * 2. + time);
 
     float smoothBlur = (noise.r * smoothstep(1., -.5, length(vec2(uv.x, uv.y * .6 + .2) - .5) * 1.));
 
@@ -106,13 +106,13 @@ void main() {
     vec4 color = vec4(1.0);
     float specularLight = specular(uLight, uShininess, uDiffuseness);
 
-    vec3 refractVecR = refract(eyeVector * .1, (normal), iorRatioRed);
-    vec3 refractVecG = refract(eyeVector * .1, (normal), iorRatioGreen);
-    vec3 refractVecB = refract(eyeVector * .1, (normal), iorRatioBlue);
+    vec3 refractVecR = refract(eyeVector * uTransmission, (normal), iorRatioRed);
+    vec3 refractVecG = refract(eyeVector * uTransmission, (normal), iorRatioGreen);
+    vec3 refractVecB = refract(eyeVector * uTransmission, (normal), iorRatioBlue);
 
-    float R = texture2D(uTexture, uv + refractVecR.rg * (fbm(uv + time * 2.) * 1. - .1) * responsive.yx * uTransmission).r;
-    float G = texture2D(uTexture, uv + refractVecG.rg * (fbm(uv + time * 2.) * 1. - .1) * responsive.yx * uTransmission).g;
-    float B = texture2D(uTexture, uv + refractVecB.rg * (fbm(uv + time * 2.) * 1. - .1) * responsive.yx * uTransmission).b;
+    float R = texture2D(uTexture, uv + refractVecR.rg * .01).r;
+    float G = texture2D(uTexture, uv + refractVecG.rg * .01).g;
+    float B = texture2D(uTexture, uv + refractVecB.rg * .01).b;
 
     vec4 colorTest = texture2D(uTexture, uv);
 
@@ -120,9 +120,9 @@ void main() {
     float spot = smoothstep(.5, .6, length(uv));
     // color = LinearTosRGB(color);
 
-    gl_FragColor = vec4(normalGrain, 1.0);
-    gl_FragColor = color;
     gl_FragColor = vec4(vec3(uv, 1.), 1.);
     gl_FragColor = vec4(vec3(spot), 1.);
     gl_FragColor = colorTest;
+    // gl_FragColor = vec4(normalGrain, 1.0);
+    gl_FragColor = color;
 }
