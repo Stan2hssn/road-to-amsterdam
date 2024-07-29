@@ -1,4 +1,7 @@
 import Powers from "./components/Powers";
+import Common from "./Common";
+import Device from "./pure/Device";
+
 import Controls from "./helpers/Controls";
 import GridHelper from "./helpers/GridHelper";
 
@@ -12,8 +15,8 @@ export default class {
 
   init() {
     this.component.powers = new Powers();
-    this.helpers.controls = new Controls();
-    this.helpers.grid = new GridHelper(10, 10);
+    // this.helpers.controls = new Controls();
+    // this.helpers.grid = new GridHelper(10, 10);
   }
 
   render(t) {
@@ -39,7 +42,11 @@ export default class {
 
   resize() {
     Object.keys(this.component).forEach((key) => {
-      this.component[key].resize();
+      this.component[key].resize(
+        Common.scale,
+        Device.viewport.height,
+        Device.viewport.width,
+      );
     });
   }
 }

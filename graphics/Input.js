@@ -6,6 +6,8 @@ import gsap from "gsap";
 class Input {
   constructor() {
     this.coords = new Vector2();
+    this.camZ = 0;
+
     this.mouseMoved = false;
     this.prevCoords = new Vector2();
     this.delta = new Vector2();
@@ -32,13 +34,18 @@ class Input {
     });
 
     this.xTo = gsap.quickTo(this.coords, "x", {
-      duration: 0.2,
+      duration: 0.6,
       ease: "power2.out",
     });
 
     this.yTo = gsap.quickTo(this.coords, "y", {
-      duration: 0.2,
+      duration: 1,
       ease: "power2.out",
+    });
+
+    this.zTo = gsap.quickTo(this, "camZ", {
+      duration: 1,
+      ease: "power1.out",
     });
 
     document.addEventListener("mousemove", this.onMouseMoveBound, false);
@@ -56,25 +63,28 @@ class Input {
 
   onScroll(event) {
     clearTimeout(this.timer);
+    this.isScrolling = true;
     this.currentScroll = event.deltaY;
-    this.vTo(this.currentScroll / 20000);
-    this.scroll += this.currentScroll;
-    console.log("scrolling", Device.scrollTop, "velocity", this.scroll);
-    Device.scrollTop = (this.scroll / 2).toFixed(3);
+    this.scroll = this.scroll + this.currentScroll;
+    Device.scrollTop = -this.scroll / 4;
     this.previousScroll = this.scroll;
-    Device.velocity = -this.velocity;
 
     this.timer = setTimeout(() => {
-      this.vTo(0);
+      this.isScrolling = false;
+    }, 100);
+  }
 
-      gsap.to(Device, {
-        duration: 0.5,
-        velocity: 0,
-        onUpdate: () => {
-          Device.velocity = -this.velocity;
-        },
-      });
-    }, 30);
+  setCoords(x, y) {
+    if (this.timer) clearTimeout(this.timer);
+
+    this.xTo((x / Device.viewport.width) * 2 - 1);
+    this.yTo(-(y / Device.viewport.height) * 2 + 1);
+    this.zTo(Math.abs((x / Device.viewport.width) * 2 - 1));
+
+    this.mouseMoved = true;
+    this.timer = setTimeout(() => {
+      this.mouseMoved = false;
+    }, 100);
   }
 
   render() {
@@ -84,30 +94,6 @@ class Input {
     if (this.prevCoords.x === 0 && this.prevCoords.y === 0) {
       this.delta.set(0, 0);
     }
-  }
-
-  setCoords(x, y) {
-    this.xTo((x / Device.viewport.width) * 2 - 1);
-    this.yTo(-(y / Device.viewport.height) * 2 + 1);
-
-    if (!this.mouseMoved) {
-      gsap.to(this, {
-        mouseVelocity: 1,
-        duration: 0.8,
-        ease: "power1.out",
-      });
-      this.mouseMoved = true;
-    }
-
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      this.mouseMoved = false;
-      gsap.to(this, {
-        mouseVelocity: 0,
-        duration: 0.4,
-        ease: "power1.out",
-      });
-    }, 300);
   }
 
   onDocumentMouseMove(event) {

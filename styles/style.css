@@ -1,0 +1,50 @@
+html,
+body {
+  height: 100svh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  font-family:
+    Avenue X,
+    sans-serif;
+
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+#app {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+}
+
+.scroll-container {
+  z-index: 1;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  gap: 8rem;
+
+  height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  font-size: 6vw;
+  font-weight: 300;
+  color: #333;
+
+  opacity: 0.5;
+}

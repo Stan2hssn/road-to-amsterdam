@@ -81,9 +81,19 @@ class Common {
   render(t) {
     if (!t) return;
 
-    this.cameraY = -Device.scrollTop;
-    this.scrollContainer.style.transform = `translate3d(0, ${-Device.scrollTop}px, 0)`;
-    this.camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
+    const { x, y } = Input.coords;
+    const z = Input.camZ;
+
+    this.cameraY = Device.scrollTop - y * 6;
+
+    this.scrollContainer.style.transform = `translate3d(0, ${Device.scrollTop}px, 0)`;
+    this.camera.position.set(
+      this.cameraX - x * 10,
+      this.cameraY,
+      this.cameraZ - z * 10,
+    );
+
+    // this.camera.lookAt(0, Input.cameraY - 0.5, this.cameraZ);
 
     this.renderer.render(this.scene, this.camera);
   }
