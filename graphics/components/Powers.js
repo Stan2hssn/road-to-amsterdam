@@ -2,6 +2,7 @@ import { Group } from "three";
 
 import Common from "../Common";
 import Content from "./content.js";
+import Balls from "./balls.js";
 
 export default class {
   Component = {};
@@ -13,6 +14,9 @@ export default class {
   init() {
     this.ComponentGroup = new Group();
     this.Component.Content = new Content();
+    this.Component.Balls = new Balls();
+
+    // Common.scene.add(this.ComponentGroup);
   }
 
   dispose() {}
