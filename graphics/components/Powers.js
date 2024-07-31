@@ -15,8 +15,6 @@ export default class {
     this.ComponentGroup = new Group();
     this.Component.Content = new Content();
     this.Component.Balls = new Balls();
-
-    // Common.scene.add(this.ComponentGroup);
   }
 
   dispose() {}

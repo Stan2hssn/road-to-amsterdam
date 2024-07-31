@@ -1,7 +1,5 @@
 uniform float uTime;
 
-attribute vec3 aTrajectory;
-
 float rand(vec2 n) {
     return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
 }
@@ -16,14 +14,9 @@ float noise(vec2 p) {
 }
 
 void main() {
-    float time = uTime * 0.005;
-    vec3 pos = position;
+    float time = uTime * 0.001;
 
-    vec3 trajectory = aTrajectory;
-
-    pos.xy -= noise(pos.xy + time * 0.1) * 10.;
-
-    vec4 vertexPos = modelMatrix * vec4(pos, 1.0);
+    vec4 vertexPos = modelMatrix * vec4(position, 1.0);
     vec4 viewPosition = viewMatrix * vertexPos;
 
     gl_Position = projectionMatrix * viewPosition;

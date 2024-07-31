@@ -68,6 +68,8 @@ class Common {
 
     this.z = 300;
 
+    this.scale = this.cameraZ / this.z;
+
     const camera = new PerspectiveCamera(
       this.params.cameraFov,
       Device.viewport.width / Device.viewport.height,
@@ -84,16 +86,16 @@ class Common {
     const { x, y } = Input.coords;
     const z = Input.camZ;
 
-    this.cameraY = Device.scrollTop - y * 6;
+    this.cameraY = Device.scrollTop - y * 50;
 
     this.scrollContainer.style.transform = `translate3d(0, ${Device.scrollTop}px, 0)`;
     this.camera.position.set(
-      this.cameraX - x * 10,
+      this.cameraX - x * 80,
       this.cameraY,
-      this.cameraZ - z * 10,
+      this.cameraZ - z * 80,
     );
 
-    // this.camera.lookAt(0, Input.cameraY - 0.5, this.cameraZ);
+    this.camera.lookAt(0, Device.scrollTop, 0);
 
     this.renderer.render(this.scene, this.camera);
   }

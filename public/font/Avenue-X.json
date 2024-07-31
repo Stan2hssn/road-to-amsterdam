@@ -1378,7 +1378,7 @@
   ],
   "info": {
     "face": "Avenue X",
-    "size": 42,
+    "size": 16,
     "bold": 0,
     "italic": 0,
     "charset": [
@@ -1498,7 +1498,7 @@
     "outline": 0
   },
   "common": {
-    "lineHeight": 50.4,
+    "lineHeight": 48,
     "base": 31.5,
     "scaleW": 512,
     "scaleH": 256,
