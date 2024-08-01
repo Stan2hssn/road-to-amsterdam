@@ -2,103 +2,108 @@ import {
   ShaderMaterial,
   SphereGeometry,
   Mesh,
-  InstancedMesh,
   Uniform,
-  Matrix4,
+  Object3D,
+  Vector2,
 } from "three";
 
 import vertexShader from ".././glsl/balls/balls.vert";
 import fragmentShader from ".././glsl/balls/balls.frag";
 
-import vertexBufferShader from ".././glsl/balls/trajectory.vert";
-import fragmentBufferShader from ".././glsl/balls/trajectory.frag";
-
 import Common from "../../Common";
+import Device from "../../pure/Device";
 
 export default class {
-  params = {
-    debug: false,
-  };
-
-  Balls = null;
-
   constructor() {
+    this.params = {
+      debug: false,
+    };
+    this.Balls = [];
+    this.ballPositions = [];
+    this.ballScales = [];
     this.init();
   }
 
-  getBalls() {
-    const ball = this.getBall();
+  defineBallAttributes() {
+    const responsive = Math.min(Device.aspectRatio, 1.8);
 
-    const trajectoryMaterial = new ShaderMaterial({
-      uniforms: {
-        time: { value: 1.0 },
-      },
-      vertexShader: vertexBufferShader,
-      fragmentShader: fragmentBufferShader,
-      wireframe: true,
-    });
+    // Define positions and scales for each sphere
+    this.ballPositions = [
+      [-200 * responsive, 0, -100],
+      [230 * responsive, -200 / 1.8, 100],
+    ];
 
-    this.ballsNumber = 3;
-
-    const ballsPosition = new Float32Array(3 * this.ballsNumber);
-    const ballsUvs = new Float32Array(2 * this.ballsNumber);
-
-    this.Balls = new InstancedMesh(
-      ball.geometry,
-      trajectoryMaterial,
-      this.ballsNumber,
-    );
-
-    for (let i = 0; i < this.ballsNumber; i++) {
-      ballsPosition[i * 3] = Math.random() * 100 - 50;
-      ballsPosition[i * 3 + 1] = Math.random() * 100 - 50;
-      ballsPosition[i * 3 + 2] = Math.random() * 100 - 50;
-
-      ballsUvs[i * 2] = Math.random();
-      ballsUvs[i * 2 + 1] = Math.random();
-
-      const matrix = new Matrix4().setPosition(
-        ballsPosition[i * 3],
-        ballsPosition[i * 3 + 1],
-        ballsPosition[i * 3 + 2],
-      );
-      this.Balls.setMatrixAt(i, matrix);
-    }
-
-    this.Balls.instanceMatrix.needsUpdate = true;
-
-    console.log("this.Balls", this.Balls);
-
-    Common.scene.add(this.Balls);
+    this.ballScales = [
+      [1.4, 1.4, 1.42],
+      [responsive, responsive, responsive],
+    ];
   }
 
-  getBall() {
-    const geometry = new SphereGeometry(32, 64, 64);
+  getBalls() {
+    this.iSize = 2; // Number of spheres
 
-    const material = new ShaderMaterial({
+    // Reuse geometry and material for all spheres
+    this.ballGeometry = new SphereGeometry(50, 32, 32);
+    this.ballMaterial = new ShaderMaterial({
       uniforms: {
-        uTime: new Uniform(1.0),
+        uTime: new Uniform(0),
+        tTransmission: new Uniform(null),
+        uResolution: new Uniform(
+          new Vector2(
+            Device.viewport.width,
+            Device.viewport.height,
+          ).multiplyScalar(Device.pixelRatio),
+        ),
       },
       vertexShader,
       fragmentShader,
-      wireframe: true,
+      transparent: true,
     });
 
-    return new Mesh(geometry, material);
+    for (let i = 0; i < this.iSize; i++) {
+      const ball = new Mesh(this.ballGeometry, this.ballMaterial);
+      ball.position.set(...this.ballPositions[i]);
+      ball.scale.set(...this.ballScales[i]);
+      this.Balls.push(ball);
+    }
   }
 
   init() {
+    this.defineBallAttributes(); // Define initial positions and scales
     this.getBalls();
+    this.Balls.forEach((ball) => {
+      Common.scene.add(ball);
+    });
   }
 
-  dispose() {}
+  dispose() {
+    this.Balls.forEach((ball) => {
+      Common.scene.remove(ball);
+      ball.geometry.dispose();
+      ball.material.dispose();
+    });
+  }
 
   render(t) {
-    this.Balls.material.uniforms.time.value = t;
-    this.Balls.instanceMatrix.needsUpdate = true;
+    this.Balls.forEach((ball) => {
+      ball.material.uniforms.uTime.value = t; // Update uTime uniform
+    });
   }
 
-  resize() {}
+  resize() {
+    this.ballMaterial.uniforms.uResolution.value
+      .set(Device.viewport.width, Device.viewport.height)
+      .multiplyScalar(Device.pixelRatio);
 
-  setDebug(debug) {}
+    this.defineBallAttributes(); // Update positions and scales based on the new responsive value
+
+    this.Balls.forEach((ball, i) => {
+      ball.position.set(...this.ballPositions[i]);
+      ball.scale.set(...this.ballScales[i]);
+    });
+  }
+
+  setDebug(debug) {
+    this.params.debug = debug;
+  }
 }

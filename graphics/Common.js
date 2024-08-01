@@ -1,8 +1,7 @@
-import Device from "./pure/Device.js";
-
 import { Pane } from "tweakpane";
 
 import Input from "./Input.js";
+import Device from "./pure/Device.js";
 
 import {
   Scene,
@@ -33,6 +32,8 @@ class Common {
     cameraFar: 10000.0,
   };
 
+  cameras = {};
+
   constructor() {
     this.scene.background = new Color(this.params.sceneColor);
 
@@ -40,7 +41,8 @@ class Common {
   }
 
   init({ canvas, scrollContainer }) {
-    this.camera = this.setCamera();
+    this.cameras.MainCamera = this.setCamera();
+
     this.scrollContainer = scrollContainer;
 
     this.renderer = new WebGLRenderer({
@@ -89,15 +91,13 @@ class Common {
     this.cameraY = Device.scrollTop - y * 50;
 
     this.scrollContainer.style.transform = `translate3d(0, ${Device.scrollTop}px, 0)`;
-    this.camera.position.set(
+    this.cameras.MainCamera.position.set(
       this.cameraX - x * 80,
       this.cameraY,
       this.cameraZ - z * 80,
     );
 
-    this.camera.lookAt(0, Device.scrollTop, 0);
-
-    this.renderer.render(this.scene, this.camera);
+    this.cameras.MainCamera.lookAt(0, Device.scrollTop, 0);
   }
 
   dispose() {
@@ -115,17 +115,29 @@ class Common {
       (Device.viewport.height /
         Math.tan((this.params.cameraFov * Math.PI) / 360)) *
       0.5;
-    this.camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
-    this.camera.aspect = aspect;
+    this.cameras.MainCamera.position.set(
+      this.cameraX,
+      this.cameraY,
+      this.cameraZ,
+    );
+    this.cameras.MainCamera.aspect = aspect;
 
     // Update projection matrices
-    this.camera.updateProjectionMatrix();
+    this.cameras.MainCamera.updateProjectionMatrix();
   }
 
   resize() {
     const parentElement = this.renderer.domElement.parentElement;
     Device.viewport.width = parentElement.offsetWidth;
     Device.viewport.height = parentElement.offsetHeight;
+    Device.pixelRatio = window.devicePixelRatio;
+
+    Device.aspectRatio = Device.viewport.width / Device.viewport.height;
+
+    Object.keys(this.cameras).forEach((key) => {
+      this.cameras[key].aspect = Device.aspectRatio;
+      this.cameras[key].updateProjectionMatrix();
+    });
 
     this.updateCamera();
 

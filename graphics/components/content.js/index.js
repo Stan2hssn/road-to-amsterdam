@@ -77,26 +77,16 @@ export default class {
 
     for (let i = 0; i < this.titles.length; i++) {
       let textContent = this.titles[i].textContent;
-      let tagName = null;
+      let tagName =
+        this.titles[i].tagName === "SPAN"
+          ? this.titles[i].parentNode.tagName
+          : this.titles[i].tagName;
 
-      if (this.titles[i].tagName == "SPAN") {
-        tagName = this.titles[i].parentNode.tagName;
-      } else {
-        tagName = this.titles[i].tagName;
-      }
-
-      this.meshes[tagName] = this.meshes[tagName] || [];
+      this.meshes[tagName] = this.meshes[tagName] || {};
       const contentMesh = this.printContent(textContent);
 
       this.meshes[tagName][i] = contentMesh;
-
-      Common.scene.add(this.meshes[tagName][i]);
-    }
-    for (let i = 0; i < this.titles.length; i++) {
-      const tagName = this.titles[i].tagName;
-      const dummyMesh = this.getDummy();
-
-      // this.meshes[tagName][i] = dummyMesh;
+      Common.scene.add(contentMesh);
     }
   }
 
@@ -121,7 +111,6 @@ export default class {
 
   render(t) {
     const { x, y } = Input.coords;
-
     Object.keys(this.meshes).forEach((tagName) => {
       Object.keys(this.meshes[tagName]).forEach((key) => {
         this.meshes[tagName][key].rotation.y = -x * 0.05;
@@ -144,19 +133,16 @@ export default class {
     this.scale = scale;
     this.height = height;
     this.width = width;
-
     Object.keys(this.meshes).forEach((tagName) => {
       Object.keys(this.meshes[tagName]).forEach((key) => {
         const rect = this.titles[key].getBoundingClientRect();
         let decay = 0;
-
         if (tagName == "H1") {
           this.meshes[tagName][key].scale.set(
             (rect.width / 500) * this.lineHeight.h1,
             (rect.height / 45) * this.lineHeight.h1,
             1,
           );
-
           decay = 8;
         } else if (tagName == "H2") {
           this.meshes[tagName][key].scale.set(
@@ -182,10 +168,8 @@ export default class {
             (rect.height / 8) * this.lineHeight.h5,
             1,
           );
-
           decay = 3;
         }
-
         this.resizeMesh(
           this.meshes[tagName][key],
           rect,
