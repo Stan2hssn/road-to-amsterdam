@@ -1,4 +1,4 @@
-import { Group, WebGLRenderTarget } from "three";
+import { FrontSide, Group, WebGLRenderTarget, BackSide } from "three";
 
 import Common from "../Common";
 import Content from "./content.js";
@@ -29,7 +29,10 @@ export default class {
 
   setupPipeline() {
     this.targets = {
-      bubbles: this.getRenderTarget(),
+      bubbles: {
+        backSide: this.getRenderTarget(),
+        frontSide: this.getRenderTarget(),
+      },
     };
   }
 
@@ -47,13 +50,23 @@ export default class {
     // Ensure ballMaterial and texture are properly set up
     this.Component.Balls.ballMaterial.visible = false;
 
-    Common.renderer.setRenderTarget(this.targets.bubbles);
+    Common.renderer.setRenderTarget(this.targets.bubbles.backSide);
+    Common.renderer.render(Common.scene, Common.cameras.MainCamera);
+
+    this.Component.Balls.ballMaterial.side = BackSide;
+
+    this.Component.Balls.ballMaterial.uniforms.tTransmission.value =
+      this.targets.bubbles.backSide.texture;
+
+    this.Component.Balls.ballMaterial.visible = true;
+
+    Common.renderer.setRenderTarget(this.targets.bubbles.frontSide);
     Common.renderer.render(Common.scene, Common.cameras.MainCamera);
 
     this.Component.Balls.ballMaterial.uniforms.tTransmission.value =
-      this.targets.bubbles.texture;
+      this.targets.bubbles.frontSide.texture;
 
-    this.Component.Balls.ballMaterial.visible = true;
+    this.Component.Balls.ballMaterial.side = FrontSide;
 
     Common.renderer.setRenderTarget(null);
     Common.renderer.render(Common.scene, Common.cameras.MainCamera);
@@ -67,10 +80,25 @@ export default class {
     });
 
     Object.keys(this.targets).forEach((key) => {
-      this.targets[key].setSize(
-        Device.viewport.width * Device.pixelRatio,
-        Device.viewport.height * Device.pixelRatio,
-      );
+      if (this.targets[key].texture) {
+        this.targets[key].setSize(
+          Device.viewport.width * Device.pixelRatio,
+          Device.viewport.height * Device.pixelRatio,
+        );
+      } else {
+        Object.keys(this.targets[key]).forEach((subKey) => {
+          this.targets[key][subKey].setSize(
+            Device.viewport.width * Device.pixelRatio,
+            Device.viewport.height * Device.pixelRatio,
+          );
+        });
+      }
+    });
+  }
+
+  debug(pane) {
+    Object.keys(this.Component).forEach((key) => {
+      this.Component[key].debug(pane);
     });
   }
 }

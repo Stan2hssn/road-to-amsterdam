@@ -21,7 +21,7 @@ export default class {
   init() {
     if (Common.debug !== null) {
       Common.setDebug();
-      this.output.setDebug();
+      this.output.debug();
     }
     this.resize();
     this.x = this.resize.bind(this);

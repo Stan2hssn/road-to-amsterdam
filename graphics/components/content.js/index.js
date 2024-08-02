@@ -1,18 +1,15 @@
 import {
   Mesh,
-  MeshBasicMaterial,
   PlaneGeometry,
   TextureLoader,
   LoadingManager,
+  DoubleSide,
+  MeshBasicMaterial,
   Color,
-  Box3,
-  Vector3,
 } from "three";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
-import { Glyph } from "three-glyph";
-
+import { MSDFTextGeometry, MSDFTextMaterial } from "three-msdf-text-utils";
 import Device from "../../pure/Device";
-
 import Common from "../../Common";
 import Input from "../../Input";
 
@@ -26,12 +23,15 @@ export default class {
     H4: {},
     H5: {},
   };
-  lineHeight = {
-    h1: 1,
+  scaleText = {
+    h1: 0.85,
     h2: 0.8,
     h3: 0.6,
     h4: 0.5,
-    h5: 0.2,
+    h5: 0.38,
+  };
+  params = {
+    Color: new Color(35 / 255, 106 / 255, 136 / 255),
   };
   $target = Common.scrollContainer;
 
@@ -40,23 +40,15 @@ export default class {
   textureLoader = new TextureLoader(this.manager);
 
   constructor() {
-    this.fontLoader.load(
-      "./font/Avenue-X.json",
-      //   "https://raw.githubusercontent.com/trinketmage/three-glyph/main/examples/simple/Love.json",
-      (raw) => {
-        this.font = raw.data;
-      },
-    );
+    this.fontLoader.load("./font/Avenue-X.json", (raw) => {
+      this.font = raw;
+    });
 
-    this.texture = this.textureLoader.load(
-      "./font/Avenue-X.png",
-      //   "./Texture/texture.jpg",
-    );
+    this.texture = this.textureLoader.load("./font/Avenue-X.png");
 
     this.manager.onLoad = () => {
       this.getContent();
       this.init();
-      this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
     };
   }
 
@@ -72,37 +64,57 @@ export default class {
     return this.plane;
   }
 
-  getContent() {
+  async getContent() {
     this.titles = Common.scrollContainer.getElementsByClassName("content");
 
     for (let i = 0; i < this.titles.length; i++) {
       let textContent = this.titles[i].textContent;
+
       let tagName =
         this.titles[i].tagName === "SPAN"
           ? this.titles[i].parentNode.tagName
           : this.titles[i].tagName;
 
       this.meshes[tagName] = this.meshes[tagName] || {};
-      const contentMesh = this.printContent(textContent);
+      const contentMesh = await this.printContent(textContent);
 
       this.meshes[tagName][i] = contentMesh;
+
+      contentMesh.rotation.x = -Math.PI;
+
       Common.scene.add(contentMesh);
     }
+    this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
   }
 
-  printContent(text, size) {
-    const { texture, font } = this;
+  async printContent(text, color) {
+    const font = this.font;
+    const texture = this.texture;
 
-    const glyph = new Glyph({
-      text: text,
-      font,
-      map: texture,
-      color: new Color(0x000000),
+    const geometry = new MSDFTextGeometry({
+      text,
+      font: font.data,
+      width: 1000,
+      align: "center",
+      flipY: true,
     });
 
-    glyph.center();
+    const material = new MSDFTextMaterial({});
 
-    return glyph;
+    material.uniforms.uColor.value = this.params.Color;
+
+    // const material = new MeshBasicMaterial({
+    //   color: 0xffff00,
+    // });
+
+    material.uniforms.uMap.value = texture;
+    material.side = DoubleSide;
+
+    const mesh = new Mesh(geometry, material);
+
+    mesh.rotation.x = Math.PI;
+
+    return mesh;
   }
 
   init() {}
@@ -113,20 +125,26 @@ export default class {
     const { x, y } = Input.coords;
     Object.keys(this.meshes).forEach((tagName) => {
       Object.keys(this.meshes[tagName]).forEach((key) => {
-        this.meshes[tagName][key].rotation.y = -x * 0.05;
-        this.meshes[tagName][key].rotation.x = -y * 0.05;
+        this.meshes[tagName][key].rotation.x = -y * 0.05 - Math.PI;
       });
     });
   }
 
-  resizeMesh(mesh, rect, scale, height, width, decay) {
+  resizeMesh(mesh, rect, scale, height, width) {
+    mesh.scale.set(scale, scale, 1);
+
     mesh.position.set(
-      rect.left + rect.width * 0.5 - width * 0.5,
-      -rect.top + Device.scrollTop - rect.height * 0.5 + height * 0.5,
+      rect.left -
+        (mesh.geometry.layout.width / 2) * mesh.scale.x +
+        rect.width * 0.5 -
+        width * 0.5,
+      -rect.top -
+        (mesh.geometry.layout.height / 2) * mesh.scale.y +
+        Device.scrollTop -
+        rect.height * 0.5 +
+        height * 0.5,
       0,
     );
-
-    mesh.position.y -= decay;
   }
 
   resize(scale, height, width) {
@@ -136,51 +154,35 @@ export default class {
     Object.keys(this.meshes).forEach((tagName) => {
       Object.keys(this.meshes[tagName]).forEach((key) => {
         const rect = this.titles[key].getBoundingClientRect();
-        let decay = 0;
+        let textScale = 1;
         if (tagName == "H1") {
-          this.meshes[tagName][key].scale.set(
-            (rect.width / 500) * this.lineHeight.h1,
-            (rect.height / 45) * this.lineHeight.h1,
-            1,
-          );
-          decay = 8;
+          textScale = this.scaleText.h1 / ((6 * 100) / width);
+          console.log("textScale", textScale);
         } else if (tagName == "H2") {
-          this.meshes[tagName][key].scale.set(
-            (rect.width / 500) * this.lineHeight.h2,
-            (rect.height / 85) * this.lineHeight.h2,
-            1,
-          );
+          textScale = this.scaleText.h2;
         } else if (tagName == "H3") {
-          this.meshes[tagName][key].scale.set(
-            (rect.width / 500) * this.lineHeight.h3,
-            (rect.height / 85) * this.lineHeight.h3,
-            1,
-          );
+          textScale = this.scaleText.h3;
         } else if (tagName == "H4") {
-          this.meshes[tagName][key].scale.set(
-            (rect.width / 500) * this.lineHeight.h4,
-            (rect.height / 85) * this.lineHeight.h4,
-            1,
-          );
+          textScale = this.scaleText.h4;
         } else if (tagName == "H5") {
-          this.meshes[tagName][key].scale.set(
-            (rect.width / 55) * this.lineHeight.h5,
-            (rect.height / 8) * this.lineHeight.h5,
-            1,
-          );
-          decay = 3;
+          textScale = this.scaleText.h5;
         }
         this.resizeMesh(
           this.meshes[tagName][key],
           rect,
-          scale,
+          textScale,
           height,
           width,
-          decay,
         );
       });
     });
   }
 
-  setDebug(debug) {}
+  debug(debug) {
+    debug.addBinding(this.params, "Color", {
+      label: "Color",
+      picker: "inline",
+      color: { type: "float" },
+    });
+  }
 }

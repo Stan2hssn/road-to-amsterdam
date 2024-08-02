@@ -17,6 +17,9 @@ dependencies:
   three-glyph:
     specifier: ^0.0.26
     version: 0.0.26
+  three-msdf-text-utils:
+    specifier: ^1.1.7
+    version: 1.1.7(three@0.161.0)
   tweakpane:
     specifier: ^4.0.4
     version: 4.0.4
@@ -495,6 +498,16 @@ packages:
 
   /three-glyph@0.0.26:
     resolution: {integrity: sha512-ljUPGEW6dU+lHvt8FF7gxOONNrqYicZijSq2Q2SY5brBPPxsdk2kVK1BeochM1E+MBp7kV2pf72yzv5+AY7x4A==}
+    dependencies:
+      quad-indices: 2.0.1
+      three: 0.161.0
+      word-wrapper: 1.0.7
+    dev: false
+
+  /three-msdf-text-utils@1.1.7(three@0.161.0):
+    resolution: {integrity: sha512-wnK349KJlDmq3eH76VD62xC+Hz6z2/7ql9mztrc7qgsXpwyxHrzOsftBUxwNBxTLEzXUvnWcSkpvjcrAThJ1Wg==}
+    peerDependencies:
+      three: '>= 0.129.0'
     dependencies:
       quad-indices: 2.0.1
       three: 0.161.0

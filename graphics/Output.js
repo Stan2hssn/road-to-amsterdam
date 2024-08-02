@@ -49,4 +49,9 @@ export default class {
       );
     });
   }
+  debug(Pane) {
+    Object.keys(this.component).forEach((key) => {
+      this.component[key].debug(Common.debug);
+    });
+  }
 }

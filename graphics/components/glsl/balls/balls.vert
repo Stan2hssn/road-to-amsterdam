@@ -1,8 +1,8 @@
 uniform float uTime;
 
-attribute float aRandom;
-
 varying vec2 vUv;
+varying vec3 worldNormal;
+varying vec3 eyeVector;
 
 float rand(vec2 n) {
     return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -24,18 +24,23 @@ void main() {
     vec4 vertexPos = modelMatrix * vec4(pos, 1.0);
 
     // Calculate translation based on noise and time
-    float translationX = noise(vec2(time * .1 + aRandom * 10., 0.0)) * 20.0;
-    float translationY = noise(vec2(0.0, time * .1 + aRandom * 10.)) * 20.0;
+    float translationX = noise(vec2(time * .1, 0.)) * 30.0; // Example of using random value for the first ball
+    float translationY = noise(vec2(0., time * .1)) * 30.0;
     vec3 translation = vec3(translationX, translationY, 0.0);
 
     // Apply the translation to the vertex position
     vertexPos.xyz -= translation;
 
-    vertexPos.xy -= noise(vertexPos.xy * .01 + time * 0.1 + aRandom) * 10.;
+    vertexPos.xy -= noise(vertexPos.xy * .01 + time * 0.1) * 30.;
 
     vec4 viewPosition = viewMatrix * vertexPos;
 
     gl_Position = projectionMatrix * viewPosition;
+
+    vec3 transformedNormal = normalMatrix * normal;
+    worldNormal = normalize(transformedNormal);
+
+    eyeVector = normalize(vertexPos.xyz - cameraPosition);
 
     vUv = uv;
 }
