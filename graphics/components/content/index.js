@@ -82,7 +82,7 @@ export default class {
 
       contentMesh.rotation.x = -Math.PI;
 
-      Common.scene.add(contentMesh);
+      Common.pages.About.scenes.Main.add(contentMesh);
     }
     this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
   }
@@ -157,7 +157,6 @@ export default class {
         let textScale = 1;
         if (tagName == "H1") {
           textScale = this.scaleText.h1 / ((6 * 100) / width);
-          console.log("textScale", textScale);
         } else if (tagName == "H2") {
           textScale = this.scaleText.h2;
         } else if (tagName == "H3") {

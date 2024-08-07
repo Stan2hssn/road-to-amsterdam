@@ -32,16 +32,43 @@ class Common {
     cameraFar: 10000.0,
   };
 
-  cameras = {};
+  pages = {
+    About: {
+      cameras: {
+        Main: {},
+        Hero: {},
+        Body: {},
+      },
+      scenes: {
+        Main: new Scene(),
+        Hero: new Scene(),
+        Body: new Scene(),
+      },
+    },
+
+    Home: {
+      cameras: {
+        Main: {},
+        Hero: {},
+        Body: {},
+      },
+      scenes: {
+        Main: new Scene(),
+        Hero: new Scene(),
+        Body: new Scene(),
+      },
+    },
+  };
 
   constructor() {
-    this.scene.background = new Color(this.params.sceneColor);
+    this.pages.About.scenes.Main.background = new Color(this.params.sceneColor);
 
     this.render = this.render.bind(this);
   }
 
   init({ canvas, scrollContainer }) {
-    this.cameras.MainCamera = this.setCamera();
+    this.pages.Home.cameras.Main = this.setCamera();
+    this.pages.About.cameras.Main = this.setCamera();
 
     this.scrollContainer = scrollContainer;
 
@@ -82,6 +109,18 @@ class Common {
     return camera;
   }
 
+  setupPipeline() {
+    this.pages.About.scenes.Hero = new Scene();
+    this.pages.About.cameras.Hero = this.setCamera();
+    this.pages.About.scenes.Body = new Scene();
+    this.pages.About.cameras.Body = this.setCamera();
+
+    this.pages.Home.scenes.Hero = new Scene();
+    this.pages.Home.cameras.Hero = this.setCamera();
+    this.pages.Home.scenes.Body = new Scene();
+    this.pages.Home.cameras.Body = this.setCamera();
+  }
+
   render(t) {
     if (!t) return;
 
@@ -91,13 +130,13 @@ class Common {
     this.cameraY = Device.scrollTop - y * 50;
 
     this.scrollContainer.style.transform = `translate3d(0, ${Device.scrollTop}px, 0)`;
-    this.cameras.MainCamera.position.set(
-      this.cameraX - x * 80,
-      this.cameraY,
-      this.cameraZ - z * 80,
+    this.pages.About.cameras.Main.position.set(
+      this.cameraX - x * 20,
+      this.cameraY - y * 20,
+      this.cameraZ - z * 20,
     );
 
-    this.cameras.MainCamera.lookAt(0, Device.scrollTop, 0);
+    this.pages.About.cameras.Main.lookAt(0, Device.scrollTop, 0);
   }
 
   dispose() {
@@ -115,15 +154,15 @@ class Common {
       (Device.viewport.height /
         Math.tan((this.params.cameraFov * Math.PI) / 360)) *
       0.5;
-    this.cameras.MainCamera.position.set(
+    this.pages.Home.cameras.Main.position.set(
       this.cameraX,
       this.cameraY,
       this.cameraZ,
     );
-    this.cameras.MainCamera.aspect = aspect;
+    this.pages.Home.cameras.Main.aspect = aspect;
 
     // Update projection matrices
-    this.cameras.MainCamera.updateProjectionMatrix();
+    this.pages.Home.cameras.Main.updateProjectionMatrix();
   }
 
   resize() {
@@ -133,11 +172,6 @@ class Common {
     Device.pixelRatio = window.devicePixelRatio;
 
     Device.aspectRatio = Device.viewport.width / Device.viewport.height;
-
-    Object.keys(this.cameras).forEach((key) => {
-      this.cameras[key].aspect = Device.aspectRatio;
-      this.cameras[key].updateProjectionMatrix();
-    });
 
     this.updateCamera();
 

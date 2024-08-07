@@ -43,12 +43,24 @@ canvas {
 .about {
   display: flex;
   flex-direction: column;
-  /* justify-content: center; */
+  justify-content: center;
   align-items: center;
+  box-sizing: border-box;
 
-  gap: 8rem;
+  gap: 16rem;
 
-  height: 100vh;
+  /* height: 100vh; */
+}
+
+.panel {
+  display: flex;
+  box-sizing: border-box;
+  width: 30vw;
+  height: auto;
+  aspect-ratio: 1/1;
+  /* background-color: #236a88; */
+
+  border: #236a88 1px solid;
 }
 
 h1 {

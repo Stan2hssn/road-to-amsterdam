@@ -1,5 +1,7 @@
+import Common from "./Common";
 import Device from "./pure/Device";
-import { Vector2 } from "three";
+
+import { Vector2, Raycaster } from "three";
 
 import gsap from "gsap";
 
@@ -135,6 +137,7 @@ class Input {
     document.removeEventListener("touchstart", this.onTouchStartBound);
     document.removeEventListener("touchmove", this.onTouchMoveBound);
     document.removeEventListener("wheel", this.onScrollBound);
+    this.interactivesObjects = [];
   }
 
   resize() {}

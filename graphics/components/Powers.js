@@ -1,9 +1,25 @@
-import { FrontSide, Group, WebGLRenderTarget, BackSide } from "three";
+import {
+  FrontSide,
+  Group,
+  WebGLRenderTarget,
+  BackSide,
+  PlaneGeometry,
+  ShaderMaterial,
+  Vector2,
+  Uniform,
+  Mesh,
+} from "three";
 
 import Common from "../Common";
-import Content from "./content.js";
-import Balls from "./balls.js";
 import Device from "../pure/Device.js";
+
+import Content from "./content/index.js";
+import Balls from "./balls/index.js";
+import Panel from "./panel/index.js";
+import Raycaster from "./raycast/index.js";
+
+import pixelsVertex from "./glsl/pixels/about.vert";
+import pixelsFragment from "./glsl/pixels/about.frag";
 
 export default class {
   Component = {};
@@ -13,9 +29,18 @@ export default class {
   }
 
   init() {
+    this.createScreen();
     this.setupPipeline();
 
+    this.Component.raycaster = new Raycaster();
+
     this.ComponentGroup = new Group();
+
+    this.Component.Panel = new Panel(
+      this.Component.raycaster.raycasterCoords,
+      this.Component.raycaster.objectId,
+    );
+
     this.Component.Content = new Content();
     this.Component.Balls = new Balls();
   }
@@ -29,15 +54,61 @@ export default class {
 
   setupPipeline() {
     this.targets = {
-      bubbles: {
+      glassy: {
         backSide: this.getRenderTarget(),
         frontSide: this.getRenderTarget(),
       },
+      blured: this.getRenderTarget(),
+      about: this.getRenderTarget(),
     };
   }
 
   dispose() {
     Object.values(this.targets).forEach((target) => target.dispose());
+  }
+
+  renderHero() {
+    // Ensure ballMaterial and texture are properly set up
+    this.Component.Balls.ballMaterial.visible = false;
+
+    Common.renderer.setRenderTarget(this.targets.glassy.backSide);
+    Common.renderer.render(
+      Common.pages.About.scenes.Main,
+      Common.pages.About.cameras.Main,
+    );
+
+    this.Component.Balls.ballMaterial.side = BackSide;
+
+    this.Component.Balls.ballMaterial.uniforms.tTransmission.value =
+      this.targets.glassy.backSide.texture;
+
+    this.Component.Balls.ballMaterial.visible = true;
+
+    Common.renderer.setRenderTarget(this.targets.glassy.frontSide);
+    Common.renderer.render(
+      Common.pages.About.scenes.Main,
+      Common.pages.About.cameras.Main,
+    );
+
+    this.Component.Balls.ballMaterial.uniforms.tTransmission.value =
+      this.targets.glassy.frontSide.texture;
+
+    this.Component.Balls.ballMaterial.side = FrontSide;
+  }
+
+  createScreen() {
+    return new Mesh(
+      new PlaneGeometry(2, 2),
+      new ShaderMaterial({
+        vertexShader: pixelsVertex,
+        fragmentShader: pixelsFragment,
+        uniforms: {
+          uTime: new Uniform(0),
+          uResolution: new Uniform(new Vector2()),
+          tTransmission: new Uniform(null),
+        },
+      }),
+    );
   }
 
   render(t) {
@@ -47,29 +118,35 @@ export default class {
       }
     });
 
-    // Ensure ballMaterial and texture are properly set up
-    this.Component.Balls.ballMaterial.visible = false;
+    this.renderHero();
+    this.Component.Panel.Materials.blured.visible = false;
 
-    Common.renderer.setRenderTarget(this.targets.bubbles.backSide);
-    Common.renderer.render(Common.scene, Common.cameras.MainCamera);
+    Common.renderer.setRenderTarget(this.targets.blured);
+    Common.renderer.render(
+      Common.pages.About.scenes.Main,
+      Common.pages.About.cameras.Main,
+    );
 
-    this.Component.Balls.ballMaterial.side = BackSide;
+    this.Component.Panel.Materials.blured.uniforms.tTransmission.value =
+      this.targets.blured.texture;
 
-    this.Component.Balls.ballMaterial.uniforms.tTransmission.value =
-      this.targets.bubbles.backSide.texture;
+    this.Component.Panel.Materials.blured.visible = true;
 
-    this.Component.Balls.ballMaterial.visible = true;
+    // this.Component.Panel.Materials.glassy.visible = false;
 
-    Common.renderer.setRenderTarget(this.targets.bubbles.frontSide);
-    Common.renderer.render(Common.scene, Common.cameras.MainCamera);
+    // Common.renderer.setRenderTarget(this.targets.glassy.frontSide);
+    // Common.renderer.render(Common.scene, Common.cameras.Dom.MainCamera);
 
-    this.Component.Balls.ballMaterial.uniforms.tTransmission.value =
-      this.targets.bubbles.frontSide.texture;
+    // this.Component.Panel.Materials.glassy.uniforms.tTransmission.value =
+    //   this.targets.glassy.frontSide.texture;
 
-    this.Component.Balls.ballMaterial.side = FrontSide;
+    // this.Component.Panel.Materials.glassy.visible = true;
 
     Common.renderer.setRenderTarget(null);
-    Common.renderer.render(Common.scene, Common.cameras.MainCamera);
+    Common.renderer.render(
+      Common.pages.About.scenes.Main,
+      Common.pages.About.cameras.Main,
+    );
   }
 
   resize(scale, height, width) {

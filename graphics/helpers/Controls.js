@@ -3,7 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default class {
   constructor() {
-    this.camera = Common.camera;
+    this.camera = Common.cameras.MainCamera;
     this.renderer = Common.renderer;
     this.init();
   }
