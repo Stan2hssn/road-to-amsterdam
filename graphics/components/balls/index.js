@@ -32,6 +32,8 @@ export default class {
     uLight: new Vector3(1, 1.9, 0.3),
   };
 
+  sections = {};
+
   constructor() {
     this.Balls = [];
     this.ballPositions = [];
@@ -103,7 +105,7 @@ export default class {
     this.defineBallAttributes(); // Define initial positions and scales
     this.getBalls();
     this.Balls.forEach((ball) => {
-      Common.scene.add(ball);
+      Common.pages.About.scenes.hero.add(ball);
     });
   }
 

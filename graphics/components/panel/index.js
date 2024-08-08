@@ -119,7 +119,7 @@ export default class {
       this.PanelGroup.add(this.Panels[panelName]);
     }
 
-    Common.pages.About.scenes.Main.add(this.PanelGroup);
+    Common.pages.About.scenes.story.add(this.PanelGroup);
   }
 
   dispose() {
@@ -134,8 +134,6 @@ export default class {
       const m = panel.material.uniforms;
 
       let angle = (i / this.params.length) * (2 * Math.PI);
-
-      // console.log("raycastCoords", this.rayCoords);
 
       m.uTime.value = t;
       m.uResolution.value

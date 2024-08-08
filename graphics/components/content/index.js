@@ -11,11 +11,11 @@ import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { MSDFTextGeometry, MSDFTextMaterial } from "three-msdf-text-utils";
 import Device from "../../pure/Device";
 import Common from "../../Common";
-import Input from "../../Input";
 
 export default class {
   content = null;
   titles = {};
+  sections = {};
   meshes = {
     H1: {},
     H2: {},
@@ -31,7 +31,7 @@ export default class {
     h5: 0.38,
   };
   params = {
-    Color: new Color(35 / 255, 106 / 255, 136 / 255),
+    Color: new Color(0x236a88),
   };
   $target = Common.scrollContainer;
 
@@ -47,6 +47,8 @@ export default class {
     this.texture = this.textureLoader.load("./font/Avenue-X.png");
 
     this.manager.onLoad = () => {
+      this.titles = Common.scrollContainer.getElementsByClassName("content");
+
       this.getContent();
       this.init();
     };
@@ -65,9 +67,14 @@ export default class {
   }
 
   async getContent() {
-    this.titles = Common.scrollContainer.getElementsByClassName("content");
+    let indexGroup;
 
     for (let i = 0; i < this.titles.length; i++) {
+      indexGroup = this.titles[i].parentNode;
+      while (indexGroup.tagName !== "SECTION") {
+        indexGroup = indexGroup.parentNode;
+      }
+
       let textContent = this.titles[i].textContent;
 
       let tagName =
@@ -82,7 +89,9 @@ export default class {
 
       contentMesh.rotation.x = -Math.PI;
 
-      Common.pages.About.scenes.Main.add(contentMesh);
+      if (Common.pages.About.scenes[indexGroup.className]) {
+        Common.pages.About.scenes[indexGroup.className].add(contentMesh);
+      }
     }
     this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
   }
@@ -121,14 +130,7 @@ export default class {
 
   dispose() {}
 
-  render(t) {
-    const { x, y } = Input.coords;
-    Object.keys(this.meshes).forEach((tagName) => {
-      Object.keys(this.meshes[tagName]).forEach((key) => {
-        this.meshes[tagName][key].rotation.x = -y * 0.05 - Math.PI;
-      });
-    });
-  }
+  render(t) {}
 
   resizeMesh(mesh, rect, scale, height, width) {
     mesh.scale.set(scale, scale, 1);

@@ -40,14 +40,19 @@ canvas {
   height: 100vh;
 }
 
-.about {
+.story {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
 
-  gap: 16rem;
+  gap: 8rem;
+
+  text-align: center;
+  padding: 8rem 0;
+
+  outline: #236a88 1.5px solid;
 
   /* height: 100vh; */
 }
@@ -78,5 +83,6 @@ h1 {
 
 h5 {
   opacity: 0;
+  width: 60%;
   color: #236a88;
 }
