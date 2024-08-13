@@ -16,114 +16,197 @@ export default class {
   content = null;
   titles = {};
   sections = {};
+
   meshes = {
     H1: {},
     H2: {},
     H3: {},
     H4: {},
     H5: {},
+    H6: {},
+    P: {},
   };
-  scaleText = {
-    h1: 0.85,
-    h2: 0.8,
-    h3: 0.6,
-    h4: 0.5,
-    h5: 0.38,
+
+  fontFamily = {
+    H1: "AvenueX",
+    H2: "AvenueX",
+    H3: "SatoshiMedium",
+    H4: "SatoshiBold",
+    H5: "SatoshiBold",
+    H6: "SatoshiMedium",
+    P: "SatoshiMedium",
   };
+
+  fontStyles = {
+    H1: {
+      scale: 0.85,
+      lineHeight: 60,
+    },
+
+    H2: {
+      scale: 0.8,
+      lineHeight: 60,
+    },
+
+    H3: {
+      scale: 0.6,
+      lineHeight: 50,
+    },
+
+    H4: {
+      scale: 0.5,
+      lineHeight: 60,
+    },
+
+    H5: {
+      scale: 0.38,
+      lineHeight: 60,
+    },
+
+    H6: {
+      scale: 0.3,
+      lineHeight: 60,
+    },
+
+    P: {
+      scale: 0.38,
+      lineHeight: 60,
+    },
+  };
+
   params = {
     Color: new Color(0x236a88),
   };
   $target = Common.scrollContainer;
+
+  Fonts = {
+    AvenueX: {
+      font: null,
+      texture: null,
+    },
+    SatoshiMedium: {
+      font: null,
+      texture: null,
+    },
+    SatoshiBold: {
+      font: null,
+      texture: null,
+    },
+  };
 
   manager = new LoadingManager();
   fontLoader = new FontLoader(this.manager);
   textureLoader = new TextureLoader(this.manager);
 
   constructor() {
-    this.fontLoader.load("./font/Avenue-X.json", (raw) => {
-      this.font = raw;
-    });
+    this.manager = new LoadingManager(this.onLoadComplete.bind(this));
+    this.fontLoader = new FontLoader(this.manager);
+    this.textureLoader = new TextureLoader(this.manager);
 
-    this.texture = this.textureLoader.load("./font/Avenue-X.png");
-
-    this.manager.onLoad = () => {
-      this.titles = Common.scrollContainer.getElementsByClassName("content");
-
-      this.getContent();
-      this.init();
-    };
+    this.loadAssets();
   }
 
-  getDummy(text, size) {
-    this.geometry = new PlaneGeometry(1, 1, 1, 1);
-
-    this.material = new MeshBasicMaterial({
-      color: 0xffff00,
+  loadAssets() {
+    this.fontLoader.load("./font/Avenue-X.json", (font) => {
+      this.Fonts.AvenueX.font = font;
     });
 
-    this.plane = new Mesh(this.geometry, this.material);
+    this.fontLoader.load("./font/Satoshi-Medium.json", (font) => {
+      this.Fonts.SatoshiMedium.font = font;
+    });
 
-    return this.plane;
+    this.fontLoader.load("./font/Satoshi-Bold.json", (font) => {
+      this.Fonts.SatoshiBold.font = font;
+    });
+
+    this.Fonts.AvenueX.texture = this.textureLoader.load("./font/Avenue-X.png");
+    this.Fonts.SatoshiMedium.texture = this.textureLoader.load(
+      "./font/Satoshi-Medium.png",
+    );
+    this.Fonts.SatoshiBold.texture = this.textureLoader.load(
+      "./font/Satoshi-Bold.png",
+    );
+  }
+
+  onLoadComplete() {
+    this.titles = this.$target.getElementsByClassName("content");
+    this.getContent();
+    this.init();
+  }
+
+  getDummy() {
+    return new Mesh(
+      new PlaneGeometry(1, 1),
+      new MeshBasicMaterial({ color: 0xffff00 }),
+    );
   }
 
   async getContent() {
-    let indexGroup;
+    const promises = [];
 
     for (let i = 0; i < this.titles.length; i++) {
-      indexGroup = this.titles[i].parentNode;
-      while (indexGroup.tagName !== "SECTION") {
-        indexGroup = indexGroup.parentNode;
-      }
+      const title = this.titles[i];
+      const section = this.getParentSection(title);
+      const tagName =
+        title.tagName === "SPAN" ? title.parentNode.tagName : title.tagName;
 
-      let textContent = this.titles[i].textContent;
+      if (!this.meshes[tagName]) this.meshes[tagName] = {};
 
-      let tagName =
-        this.titles[i].tagName === "SPAN"
-          ? this.titles[i].parentNode.tagName
-          : this.titles[i].tagName;
+      const contentMeshPromise = this.printContent(
+        title.innerText,
+        this.fontFamily[tagName],
+        title,
+        tagName,
+      ).then((contentMesh) => {
+        contentMesh.rotation.x = -Math.PI;
+        this.meshes[tagName][i] = contentMesh;
 
-      this.meshes[tagName] = this.meshes[tagName] || {};
-      const contentMesh = await this.printContent(textContent);
+        if (Common.pages.About.scenes[section.className]) {
+          Common.pages.About.scenes[section.className].add(contentMesh);
+        }
+      });
 
-      this.meshes[tagName][i] = contentMesh;
-
-      contentMesh.rotation.x = -Math.PI;
-
-      if (Common.pages.About.scenes[indexGroup.className]) {
-        Common.pages.About.scenes[indexGroup.className].add(contentMesh);
-      }
+      promises.push(contentMeshPromise);
     }
+
+    await Promise.all(promises);
     this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
   }
 
-  async printContent(text, color) {
-    const font = this.font;
-    const texture = this.texture;
+  getParentSection(element) {
+    let parent = element.parentNode;
+    while (parent.tagName !== "SECTION") {
+      parent = parent.parentNode;
+    }
+    return parent;
+  }
+
+  async printContent(text, fontFamily, title, tagName) {
+    const { font, texture } = this.Fonts[fontFamily];
+    const style = window.getComputedStyle(title);
+    const align = style["text-align"];
+    const lineHeight = this.fontStyles[tagName].lineHeight;
 
     const geometry = new MSDFTextGeometry({
       text,
       font: font.data,
       width: 1000,
-      align: "center",
+      align: align,
       flipY: true,
+      lineHeight: lineHeight,
+      letterSpacing: 0.5,
     });
 
     const material = new MSDFTextMaterial({});
 
     material.uniforms.uColor.value = this.params.Color;
-
-    // const material = new MeshBasicMaterial({
-    //   color: 0xffff00,
-    // });
-
     material.uniforms.uMap.value = texture;
-    material.side = DoubleSide;
 
     const mesh = new Mesh(geometry, material);
 
     mesh.rotation.x = Math.PI;
 
-    return mesh;
+    return new Mesh(geometry, material);
   }
 
   init() {}
@@ -132,8 +215,15 @@ export default class {
 
   render(t) {}
 
-  resizeMesh(mesh, rect, scale, height, width) {
-    mesh.scale.set(scale, scale, 1);
+  resizeMesh(mesh, rect, textScale, height, width, text, scaleFactor) {
+    if (scaleFactor > 1) {
+      mesh.geometry.update({
+        width: rect.width * scaleFactor,
+        height: rect.height,
+      });
+    }
+
+    mesh.scale.set(textScale, textScale, 1);
 
     mesh.position.set(
       rect.left -
@@ -153,20 +243,31 @@ export default class {
     this.scale = scale;
     this.height = height;
     this.width = width;
+
     Object.keys(this.meshes).forEach((tagName) => {
       Object.keys(this.meshes[tagName]).forEach((key) => {
         const rect = this.titles[key].getBoundingClientRect();
+        const text = this.titles[key].innerText;
+
+        let scaleFactor = 1;
         let textScale = 1;
         if (tagName == "H1") {
-          textScale = this.scaleText.h1 / ((6 * 100) / width);
+          textScale = this.fontStyles.H1.scale / ((6 * 100) / width);
         } else if (tagName == "H2") {
-          textScale = this.scaleText.h2;
+          textScale = this.fontStyles.H2.scale;
         } else if (tagName == "H3") {
-          textScale = this.scaleText.h3;
+          textScale = this.fontStyles.H3.scale / ((8 * 100) / width);
         } else if (tagName == "H4") {
-          textScale = this.scaleText.h4;
+          textScale = this.fontStyles.H4.scale;
         } else if (tagName == "H5") {
-          textScale = this.scaleText.h5;
+          textScale = this.fontStyles.H5.scale;
+          scaleFactor = 2.6;
+        } else if (tagName == "H6") {
+          textScale = this.fontStyles.H6.scale;
+          scaleFactor = 2.8;
+        } else if (tagName == "P") {
+          textScale = this.fontStyles.P.scale;
+          scaleFactor = 2.6;
         }
         this.resizeMesh(
           this.meshes[tagName][key],
@@ -174,16 +275,29 @@ export default class {
           textScale,
           height,
           width,
+          text,
+          scaleFactor,
         );
       });
     });
   }
 
   debug(debug) {
-    debug.addBinding(this.params, "Color", {
-      label: "Color",
-      picker: "inline",
-      color: { type: "float" },
-    });
+    debug
+      .addBinding(this.fontStyles.H3, "lineHeight", {
+        label: "Line Height",
+        min: 0,
+        max: 100,
+        step: 1,
+      })
+      .on("change", () => {
+        Object.keys(this.meshes).forEach((tagName) => {
+          Object.keys(this.meshes[tagName]).forEach((key) => {
+            this.meshes[tagName][key].geometry.update({
+              lineHeight: this.fontStyles.H3.lineHeight,
+            });
+          });
+        });
+      });
   }
 }

@@ -119,7 +119,7 @@ export default class {
       this.PanelGroup.add(this.Panels[panelName]);
     }
 
-    Common.pages.About.scenes.story.add(this.PanelGroup);
+    Common.pages.About.scenes.key.add(this.PanelGroup);
   }
 
   dispose() {

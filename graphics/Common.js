@@ -41,11 +41,13 @@ class Common {
     About: {
       cameras: {
         hero: {},
+        key: {},
         story: {},
       },
       scenes: {
         main: new Scene(),
         hero: new Scene(),
+        key: new Scene(),
         story: new Scene(),
       },
     },
@@ -92,8 +94,6 @@ class Common {
   }
 
   setCamera() {
-    this.scale = 1;
-
     this.cameraX = 0;
     this.cameraY = 0;
     this.cameraZ =
@@ -118,6 +118,8 @@ class Common {
   setupPipeline() {
     this.pages.About.scenes.hero = new Scene();
     this.pages.About.cameras.hero.main = this.setCamera();
+    this.pages.About.scenes.key = new Scene();
+    this.pages.About.cameras.key.main = this.setCamera();
     this.pages.About.scenes.story = new Scene();
     this.pages.About.cameras.story.main = this.setCamera();
 
@@ -145,25 +147,29 @@ class Common {
     this.scrollContainer.style.transform = `translate3d(0, ${Device.scrollTop}px, 0)`;
 
     this.pages.About.cameras.hero.main.position.set(
-      this.cameraX - x * 20 * this.mousePower.x,
-      -y * 30 * this.mousePower.y,
-      this.cameraZ - z * 20,
+      this.cameraX - x * 40 * this.mousePower.x,
+      -y * 60 * this.mousePower.y,
+      this.cameraZ - z * 40,
     );
     this.pages.About.cameras.hero.main.lookAt(0, 0, 0);
 
     this.pages.About.cameras.main.position.set(
-      this.cameraX,
-      Device.scrollTop,
-      this.cameraZ,
+      this.cameraX - x * 1 * this.mousePower.x,
+      this.cameraY,
+      this.cameraZ - z * 1,
+    );
+
+    this.pages.About.cameras.key.main.position.set(
+      this.cameraX - x * 1 * this.mousePower.x,
+      this.cameraY,
+      this.cameraZ - z * 1,
     );
 
     this.pages.About.cameras.story.main.position.set(
-      this.cameraX,
-      Device.scrollTop,
-      this.cameraZ,
+      this.cameraX - x * 1 * this.mousePower.x,
+      this.cameraY,
+      this.cameraZ - z * 1,
     );
-
-    // console.log("this.cameraY", this.cameraY - y * this.mousePower.y);
   }
 
   dispose() {
@@ -214,6 +220,8 @@ class Common {
     Device.aspectRatio = Device.viewport.width / Device.viewport.height;
 
     this.updateCameras();
+
+    this.scale = this.cameraZ / this.z;
 
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);
     this.renderer.setPixelRatio(Device.pixelRatio);

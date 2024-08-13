@@ -23,6 +23,9 @@ dependencies:
   tweakpane:
     specifier: ^4.0.4
     version: 4.0.4
+  word-wrapper:
+    specifier: ^1.0.7
+    version: 1.0.7
 
 devDependencies:
   prettier:

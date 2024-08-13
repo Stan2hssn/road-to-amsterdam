@@ -9,6 +9,7 @@ import {
   Uniform,
   Mesh,
   TextureLoader,
+  BoxGeometry,
 } from "three";
 
 import Common from "../Common";
@@ -19,14 +20,17 @@ import Balls from "./balls/index.js";
 import Panel from "./panel/index.js";
 import Raycaster from "./raycast/index.js";
 
-import pixelsVertex from "./glsl/pixels/about.vert";
-import pixelsFragment from "./glsl/pixels/about.frag";
+import pixelsVertex from "./glsl/pixels/pixel.vert";
+import pixelsFragment from "./glsl/pixels/pixel.frag";
 
-import storyFragment from "./glsl/pixels/story.frag";
-import storyVertex from "./glsl/pixels/story.vert";
+import backgroundGlassFragment from "./glsl/pixels/backgroundGlass.frag";
+import backgroundGlassVertex from "./glsl/pixels/backgroundGlass.vert";
+
+import Input from "../Input.js";
 
 export default class {
   Component = {};
+  Background = {};
   Helpers = {};
   Screens = {};
   Groups = {};
@@ -49,8 +53,10 @@ export default class {
     this.setupRenderTarget();
 
     this.Screens.hero = this.createScreen("hero");
+    this.Screens.key = this.createScreen("key", true);
     this.Screens.story = this.createScreen("story");
-    this.setBackgroundStory();
+
+    this.setBackgroundGlass();
 
     this.Helpers.raycaster = new Raycaster();
 
@@ -69,15 +75,15 @@ export default class {
       Common.pages.About.scenes.main.add(this.Screens[key]);
     });
 
-    // Common.pages.About.scenes.story.add(this.Component.transHero);
+    // Common.pages.About.scenes.key.add(this.Component.transHero);
   }
 
-  setBackgroundStory() {
-    this.Component.backgroundStory = new Mesh(
+  setBackgroundGlass() {
+    this.Background.glass = new Mesh(
       new PlaneGeometry(2, 2),
       new ShaderMaterial({
-        vertexShader: storyVertex,
-        fragmentShader: storyFragment,
+        vertexShader: backgroundGlassVertex,
+        fragmentShader: backgroundGlassFragment,
         uniforms: {
           uTime: new Uniform(0),
           uResolution: new Uniform(
@@ -90,13 +96,13 @@ export default class {
           frostedGlass: new Uniform(this.textures.frostedGlass),
           noiseTexture: new Uniform(this.textures.noiseTexture),
           uShift: new Uniform(0),
+          uCoords: new Uniform(Input.coords),
+          uBackground: new Uniform(Common.params.sceneColor),
         },
       }),
     );
 
-    this.Component.backgroundStory.position.z = -800;
-
-    Common.pages.About.scenes.story.add(this.Component.backgroundStory);
+    Common.pages.About.scenes.key.add(this.Background.glass);
   }
 
   getRenderTarget() {
@@ -115,6 +121,7 @@ export default class {
       blured: this.getRenderTarget(),
       about: {
         hero: this.getRenderTarget(),
+        key: this.getRenderTarget(),
         story: this.getRenderTarget(),
       },
     };
@@ -124,7 +131,9 @@ export default class {
     Object.values(this.targets).forEach((target) => target.dispose());
   }
 
-  createScreen(className) {
+  createScreen(className, border) {
+    border === true ? (border = 1) : (border = 0);
+
     const mesh = new Mesh(
       new PlaneGeometry(1, 1),
       new ShaderMaterial({
@@ -139,6 +148,7 @@ export default class {
             ).multiplyScalar(Device.pixelRatio),
           ),
           uTexture: new Uniform(null),
+          uBoolean: new Uniform(border),
         },
       }),
     );
@@ -185,8 +195,19 @@ export default class {
     this.Screens.hero.material.uniforms.uTexture.value =
       this.targets.about.hero.texture;
 
-    this.Component.backgroundStory.material.uniforms.uTexture.value =
+    this.Background.glass.material.uniforms.uTexture.value =
       this.targets.about.hero.texture;
+  }
+
+  renderKey() {
+    Common.renderer.setRenderTarget(this.targets.about.key);
+    Common.renderer.render(
+      Common.pages.About.scenes.key,
+      Common.pages.About.cameras.key.main,
+    );
+
+    this.Screens.key.material.uniforms.uTexture.value =
+      this.targets.about.key.texture;
   }
 
   renderStory() {
@@ -207,11 +228,10 @@ export default class {
       }
     });
 
-    this.Component.backgroundStory.position.y = Device.scrollTop;
-    this.Component.backgroundStory.material.uniforms.uShift.value =
-      Device.scrollTop;
+    this.Background.glass.y = -Device.scrollTop * 0.1;
 
     this.renderHero();
+    this.renderKey();
     this.renderStory();
 
     Common.renderer.setRenderTarget(null);
@@ -262,28 +282,24 @@ export default class {
       );
     });
 
-    this.Component.backgroundStory.material.uniforms.uResolution.value
+    const keySize = document.querySelector(".key").getBoundingClientRect();
+
+    this.Background.glass.material.uniforms.uResolution.value
       .set(Device.viewport.width, Device.viewport.height)
       .multiplyScalar(Device.pixelRatio);
 
-    Device.aspectRatio > 1
-      ? this.Component.backgroundStory.scale.set(
-          Device.viewport.width * Device.aspectRatio * 2,
-          Device.viewport.height * Device.aspectRatio * 2,
-          1,
-        )
-      : this.Component.backgroundStory.scale.set(
-          Device.viewport.width * 2,
-          Device.viewport.height * 2,
-          1,
-        );
+    const distance = 100;
 
-    console.log("pixelRatio", Device.pixelRatio);
+    this.Background.glass.scale.set(keySize.width, keySize.height * scale, 1);
+
+    this.Background.glass.position.set(0, 0, -distance);
   }
 
   debug(pane) {
     Object.keys(this.Component).forEach((key) => {
-      this.Component[key].debug(pane);
+      if (typeof this.Component[key].debug === "function") {
+        this.Component[key].debug(pane);
+      }
     });
   }
 }
