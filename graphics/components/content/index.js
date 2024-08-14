@@ -6,6 +6,8 @@ import {
   DoubleSide,
   MeshBasicMaterial,
   Color,
+  Vector2,
+  Uniform,
 } from "three";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { MSDFTextGeometry, MSDFTextMaterial } from "three-msdf-text-utils";
@@ -16,6 +18,10 @@ export default class {
   content = null;
   titles = {};
   sections = {};
+  Color = {
+    bluePrimary: null,
+    blueSecondary: null,
+  };
 
   meshes = {
     H1: {},
@@ -31,7 +37,7 @@ export default class {
     H1: "AvenueX",
     H2: "AvenueX",
     H3: "SatoshiMedium",
-    H4: "SatoshiBold",
+    H4: "AvenueX",
     H5: "SatoshiBold",
     H6: "SatoshiMedium",
     P: "SatoshiMedium",
@@ -54,7 +60,7 @@ export default class {
     },
 
     H4: {
-      scale: 0.5,
+      scale: 0.56,
       lineHeight: 60,
     },
 
@@ -64,19 +70,16 @@ export default class {
     },
 
     H6: {
-      scale: 0.3,
+      scale: 0.35,
       lineHeight: 60,
     },
 
     P: {
       scale: 0.38,
-      lineHeight: 60,
+      lineHeight: 52,
     },
   };
 
-  params = {
-    Color: new Color(0x236a88),
-  };
   $target = Common.scrollContainer;
 
   Fonts = {
@@ -130,6 +133,12 @@ export default class {
 
   onLoadComplete() {
     this.titles = this.$target.getElementsByClassName("content");
+    Object.keys(this.Color).forEach((key) => {
+      const cssColor = getComputedStyle(document.documentElement)
+        .getPropertyValue(`--${key}`)
+        .trim();
+      this.Color[key] = new Color(cssColor);
+    });
     this.getContent();
     this.init();
   }
@@ -181,6 +190,10 @@ export default class {
     return parent;
   }
 
+  rgbToHex(r, g, b) {
+    return ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+  }
+
   async printContent(text, fontFamily, title, tagName) {
     const { font, texture } = this.Fonts[fontFamily];
     const style = window.getComputedStyle(title);
@@ -199,7 +212,20 @@ export default class {
 
     const material = new MSDFTextMaterial({});
 
-    material.uniforms.uColor.value = this.params.Color;
+    const cssColor = style
+      .getPropertyValue("color")
+      .match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+
+    const color = this.rgbToHex(cssColor[1], cssColor[2], cssColor[3]);
+
+    Object.keys(this.Color).forEach((key) => {
+      let hex = this.Color[key].getHexString();
+
+      if (hex === color) {
+        material.uniforms.uColor = this.Color[key];
+      }
+    });
+
     material.uniforms.uMap.value = texture;
 
     const mesh = new Mesh(geometry, material);
@@ -213,13 +239,36 @@ export default class {
 
   dispose() {}
 
-  render(t) {}
+  render(t) {
+    this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
+  }
 
-  resizeMesh(mesh, rect, textScale, height, width, text, scaleFactor) {
+  resizeMesh(mesh, rect, textScale, height, width, text, scaleFactor, style) {
+    const material = mesh.material;
+    let newColor = null;
+
+    const cssColor = style
+      .getPropertyValue("color")
+      .match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+
+    const color = this.rgbToHex(cssColor[1], cssColor[2], cssColor[3]);
+
+    Object.keys(this.Color).forEach((key) => {
+      let hex = this.Color[key].getHexString();
+
+      if (hex === color) {
+        newColor = this.Color[key];
+      }
+    });
+
+    if (newColor) {
+      mesh.material.uniforms.uColor.value = newColor;
+    }
+
     if (scaleFactor > 1) {
       mesh.geometry.update({
         width: rect.width * scaleFactor,
-        height: rect.height,
+        height: rect.height * scaleFactor,
       });
     }
 
@@ -248,6 +297,7 @@ export default class {
       Object.keys(this.meshes[tagName]).forEach((key) => {
         const rect = this.titles[key].getBoundingClientRect();
         const text = this.titles[key].innerText;
+        const style = window.getComputedStyle(this.titles[key]);
 
         let scaleFactor = 1;
         let textScale = 1;
@@ -256,9 +306,10 @@ export default class {
         } else if (tagName == "H2") {
           textScale = this.fontStyles.H2.scale;
         } else if (tagName == "H3") {
-          textScale = this.fontStyles.H3.scale / ((8 * 100) / width);
+          textScale = this.fontStyles.H3.scale / ((7 * 100) / width);
         } else if (tagName == "H4") {
           textScale = this.fontStyles.H4.scale;
+          scaleFactor = 1;
         } else if (tagName == "H5") {
           textScale = this.fontStyles.H5.scale;
           scaleFactor = 2.6;
@@ -277,6 +328,7 @@ export default class {
           width,
           text,
           scaleFactor,
+          style,
         );
       });
     });

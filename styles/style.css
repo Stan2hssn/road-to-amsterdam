@@ -1,3 +1,8 @@
+:root {
+  --bluePrimary: #236a88;
+  --blueSecondary: #3d8baf;
+}
+
 html,
 body {
   height: 100svh;
@@ -12,6 +17,7 @@ body {
 
   overscroll-behavior: none;
   overflow: hidden;
+  color: var(--bluePrimary);
 }
 #app {
   -webkit-font-smoothing: antialiased;
@@ -27,6 +33,7 @@ canvas {
 
 .scroll-container {
   z-index: 1;
+  opacity: 0;
 }
 
 .hero {
@@ -40,60 +47,65 @@ canvas {
 
   height: 100vh;
 
-  opacity: 0;
+  /* opacity: 0; */
 }
 
 .key {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  /* box-sizing: border-box; */
+  align-items: start;
 
-  gap: 8rem;
+  gap: 3rem;
 
-  padding: 8rem 0;
+  padding: 8rem 8rem;
 
-  /* outline: #236a88 1.5px solid; */
+  h4 {
+    text-align: center;
+    font-size: 1.5rem;
+  }
 
-  /* height: 100vh; */
-}
+  .panel {
+    display: flex;
+    box-sizing: border-box;
+    width: 30vw;
+    height: auto;
+    aspect-ratio: 1/1;
+    /* background-color: #236a88; */
+    align-self: center;
 
-.panel {
-  display: flex;
-  box-sizing: border-box;
-  width: 30vw;
-  height: auto;
-  aspect-ratio: 1/1;
-  /* background-color: #236a88; */
+    border: #236a88 1px solid;
+  }
 
-  border: #236a88 1px solid;
-}
+  .col-2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4rem;
+    padding: 0rem calc(5vw + 1rem);
+    width: 100%;
 
-.row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-  width: 100%;
+      width: 100%;
 
-  gap: 16rem;
-  padding: 0rem 8rem;
-}
+      gap: 8rem;
+      padding: auto auto;
 
-.col {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1.5rem;
-  max-width: 40ch;
-}
+      .col {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.5rem;
 
-.col-2 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5rem;
+        max-width: 512px;
+      }
+    }
+  }
 }
 
 .story {
@@ -117,7 +129,8 @@ canvas {
     justify-content: center;
     align-items: center;
     gap: 2rem;
-    opacity: 0;
+
+    /* opacity: 0; */
 
     .content {
       text-align: center;
@@ -125,7 +138,7 @@ canvas {
 
     h3 {
       max-width: 80%;
-      font-size: 3vw;
+      font-size: 3.5vw;
     }
 
     h6 {
@@ -142,29 +155,41 @@ h1 {
   text-align: center;
   font-size: 6vw;
   font-weight: 300;
-  color: #236a88;
-
-  opacity: 0;
 }
 
 h5 {
+  font-family:
+    Satoshi Variable,
+    sans-serif;
   width: 100%;
   font-size: 1rem;
-  font-family: Satoshi-Bold, sans-serif;
-  opacity: 0;
-  color: #236a88;
+}
+
+h6 {
+  font-family:
+    Satoshi Variable,
+    sans-serif;
+  font-size: 1rem;
+  color: var(--blueSecondary);
 }
 
 p {
   font-family: Satoshi-Medium, sans-serif;
   font-size: 1rem;
   line-height: 120%;
-  opacity: 0;
 }
 
 @media screen and (max-width: 1080px) {
-  .row {
-    gap: 4rem;
-    padding: 0rem 4rem;
+  .key {
+    .panel {
+      width: 40vw;
+    }
+
+    .col-2 {
+      .row {
+        padding: 0rem 0rem;
+        gap: 4rem;
+      }
+    }
   }
 }
