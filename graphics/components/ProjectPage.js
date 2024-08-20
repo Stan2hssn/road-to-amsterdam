@@ -246,8 +246,6 @@ export default class {
     this.setBubbles();
 
     this.latelier = this.getModel(this.model.AtelierCO);
-
-    console.log("Common.projectScene", Common.projectScene);
   }
 
   dispose() {
