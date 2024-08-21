@@ -31,6 +31,7 @@ export default class {
     H5: {},
     H6: {},
     P: {},
+    A: {},
   };
 
   fontFamily = {
@@ -41,6 +42,7 @@ export default class {
     H5: "SatoshiBold",
     H6: "SatoshiMedium",
     P: "SatoshiMedium",
+    A: "SatoshiMedium",
   };
 
   fontStyles = {
@@ -70,13 +72,18 @@ export default class {
     },
 
     H6: {
-      scale: 0.35,
+      scale: 0.38,
       lineHeight: 60,
     },
 
     P: {
       scale: 0.38,
       lineHeight: 52,
+    },
+
+    A: {
+      scale: 0.38,
+      lineHeight: 60,
     },
   };
 
@@ -179,6 +186,7 @@ export default class {
     }
 
     await Promise.all(promises);
+
     this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
   }
 
@@ -222,7 +230,7 @@ export default class {
       let hex = this.Color[key].getHexString();
 
       if (hex === color) {
-        material.uniforms.uColor = this.Color[key];
+        // material.uniforms.uColor = this.Color[key];
       }
     });
 
@@ -239,9 +247,7 @@ export default class {
 
   dispose() {}
 
-  render(t) {
-    this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
-  }
+  render(t) {}
 
   resizeMesh(mesh, rect, textScale, height, width, text, scaleFactor, style) {
     const material = mesh.material;
@@ -269,6 +275,7 @@ export default class {
       mesh.geometry.update({
         width: rect.width * scaleFactor,
         height: rect.height * scaleFactor,
+        text: text,
       });
     }
 
@@ -297,6 +304,8 @@ export default class {
       Object.keys(this.meshes[tagName]).forEach((key) => {
         const rect = this.titles[key].getBoundingClientRect();
         const text = this.titles[key].innerText;
+        console.log("text", text);
+
         const style = window.getComputedStyle(this.titles[key]);
 
         let scaleFactor = 1;
@@ -319,6 +328,9 @@ export default class {
         } else if (tagName == "P") {
           textScale = this.fontStyles.P.scale;
           scaleFactor = 2.6;
+        } else if (tagName == "A") {
+          textScale = this.fontStyles.A.scale;
+          scaleFactor = 2.8;
         }
         this.resizeMesh(
           this.meshes[tagName][key],

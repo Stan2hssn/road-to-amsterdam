@@ -33,7 +33,7 @@ canvas {
 
 .scroll-container {
   z-index: 1;
-  opacity: 0;
+  /* opacity: 0; */
 }
 
 .hero {
@@ -47,16 +47,14 @@ canvas {
 
   height: 100vh;
 
-  /* opacity: 0; */
+  opacity: 0;
 }
 
 .key {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: start;
 
-  gap: 3rem;
+  gap: 8rem;
 
   padding: 8rem 8rem;
 
@@ -77,41 +75,52 @@ canvas {
     border: #236a88 1px solid;
   }
 
-  .col-2 {
+  .col {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    gap: 4rem;
-    padding: 0rem calc(5vw + 1rem);
-    width: 100%;
+    align-items: start;
 
-    .row {
+    gap: 3rem;
+
+    .col-2 {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      justify-content: center;
       align-items: center;
-
+      gap: 4rem;
+      padding: 0rem calc(5vw + 1rem);
       width: 100%;
 
-      gap: 8rem;
-      padding: auto auto;
-
-      .col {
+      .row {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 1.5rem;
+        justify-content: space-between;
+        align-items: center;
 
-        max-width: 512px;
+        width: 100%;
+
+        gap: 8rem;
+        padding: auto auto;
+
+        .col {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 1.5rem;
+
+          max-width: 512px;
+        }
       }
     }
   }
+
+  opacity: 0;
 }
 
 .story {
   display: flex;
   flex-direction: column;
-  padding: 8rem 2rem;
+  padding: 0rem 8rem 8rem 8rem;
 
   gap: 8rem;
 
@@ -123,12 +132,90 @@ canvas {
     background-color: #d9d9d9;
   }
 
+  .experiences {
+    display: flex;
+    flex-direction: row;
+    gap: 8rem;
+    opacity: 0.2;
+
+    .col_expe {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      width: 100%;
+
+      .col_3 {
+        display: flex;
+        flex-direction: column;
+        gap: 4rem;
+
+        padding-left: 4em;
+
+        .row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          gap: 8rem;
+          padding: auto auto;
+
+          .col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.5rem;
+          }
+        }
+
+        .col {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+
+          .breakH6 {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+
+            h6 {
+              width: auto;
+              text-align: center;
+            }
+          }
+
+          p {
+            transform: translate3d(-6px, 0, 0);
+          }
+
+          .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 8rem;
+            padding: auto auto;
+
+            .col {
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              gap: 1.5rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
   .bio {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 2rem;
+
+    padding-top: 4em;
 
     /* opacity: 0; */
 
@@ -144,6 +231,17 @@ canvas {
     h6 {
       width: 100%;
     }
+
+    opacity: 0;
+  }
+}
+
+@media screen and (max-width: 1080px) {
+  .story {
+    .experiences {
+      flex-direction: column;
+      gap: 8rem;
+    }
   }
 }
 
@@ -158,9 +256,7 @@ h1 {
 }
 
 h5 {
-  font-family:
-    Satoshi Variable,
-    sans-serif;
+  font-family: Satoshi-Medium, sans-serif;
   width: 100%;
   font-size: 1rem;
 }
@@ -169,6 +265,7 @@ h6 {
   font-family:
     Satoshi Variable,
     sans-serif;
+  font-weight: 500;
   font-size: 1rem;
   color: var(--blueSecondary);
 }
@@ -177,6 +274,12 @@ p {
   font-family: Satoshi-Medium, sans-serif;
   font-size: 1rem;
   line-height: 120%;
+}
+
+a {
+  font-family: Satoshi-Bold, sans-serif;
+  white-space: nowrap;
+  color: var(--blueSecondary);
 }
 
 @media screen and (max-width: 1080px) {

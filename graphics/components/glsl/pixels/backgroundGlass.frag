@@ -34,9 +34,9 @@ void main() {
 
     vec2 noise = (noiseTexture.rg * .2) + pow(frostedGlass.r, 2.);
 
-    float colorR = texture2D(uTexture, (uv + (noise * .32)) * vec2(1., l / 2.) + vec2(-.12, .15)).r;
-    float colorG = texture2D(uTexture, (uv + (noise * .31)) * vec2(1., l / 2.) + vec2(-.12, .15)).g;
-    float colorB = texture2D(uTexture, (uv + (noise * .3)) * vec2(1., l / 2.) + vec2(-.12, .15)).b;
+    float colorR = texture2D(uTexture, (uv + (noise * .31)) + vec2(-.12, -.12)).r;
+    float colorG = texture2D(uTexture, (uv + (noise * .305)) + vec2(-.12, -.12)).g;
+    float colorB = texture2D(uTexture, (uv + (noise * .3)) + vec2(-.12, -.12)).b;
 
     vec4 color = vec4(colorR + .2, colorG + .2, colorB + .2, 1.0);
 

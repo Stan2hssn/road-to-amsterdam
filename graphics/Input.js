@@ -61,6 +61,14 @@ class Input {
       passive: true,
     });
     document.addEventListener("wheel", this.onScrollBound, false);
+
+    // this.shift();
+  }
+
+  shift() {
+    setTimeout(() => {
+      Device.scrollTop = -this.scroll / 4 - 2300;
+    }, 0);
   }
 
   onScroll(event) {
