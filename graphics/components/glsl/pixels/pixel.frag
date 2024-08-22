@@ -14,7 +14,7 @@ void main() {
 
     vec4 color = texture2D(uTexture, uv);
 
-    float limit = mix(0., 0.002, uBoolean);
+    float limit = mix(0., 0.002 * (uResolution.x / uResolution.y) * .5, uBoolean);
     float border = 1. - step(1. - limit, st.y);
 
     color = sRGBTransferOETF(color);

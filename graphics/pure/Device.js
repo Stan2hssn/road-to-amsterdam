@@ -6,4 +6,5 @@ export default {
   pixelRatio: Math.min(window.devicePixelRatio, 2),
   scrollTop: 0,
   aspectRatio: 0,
+  scrollHeight: 0,
 };

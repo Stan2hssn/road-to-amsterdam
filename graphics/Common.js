@@ -225,6 +225,9 @@ class Common {
 
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);
     this.renderer.setPixelRatio(Device.pixelRatio);
+
+    Device.scrollHeight =
+      this.scrollContainer.clientHeight - Device.viewport.height;
   }
 
   setDebug(debug) {

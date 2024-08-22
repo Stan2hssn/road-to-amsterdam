@@ -7,25 +7,41 @@ import gsap from "gsap";
 
 class Input {
   constructor() {
-    this.coords = new Vector2();
+    this.coords = new Vector2(0.5, 0);
     this.camZ = 0;
+
+    this.isScrolling = false;
+    this.canDrag = false;
 
     this.mouseMoved = false;
     this.prevCoords = new Vector2();
+
+    this.dragCoords = new Vector2();
+    this.prevDragCoords = new Vector2();
+    this.dragDelta = new Vector2();
+
     this.delta = new Vector2();
     this.timer = null;
+    this.temp = 0;
+
     this.scroll = 0;
     this.previousScroll = 0;
     this.currentScroll = 0;
+    this.push = 0;
+    this.prevPush = 0;
+
     this.count = 0;
+
     this.velocity = 0;
+    this.inertia = 0;
+
+    this.dragTimer = null;
+
     this.mouseVelocity = 0;
 
     this.onMouseMoveBound = this.onDocumentMouseMove.bind(this);
     this.onTouchStartBound = this.onDocumentTouchStart.bind(this);
-    this.onTouchEndBound = this.onDocumentTouchEnd.bind(this);
     this.onTouchMoveBound = this.onDocumentTouchMove.bind(this);
-
     this.onScrollBound = this.onScroll.bind(this);
   }
 
@@ -57,9 +73,7 @@ class Input {
     document.addEventListener("touchmove", this.onTouchMoveBound, {
       passive: false,
     });
-    document.addEventListener("touchend", this.onTouchEndBound, {
-      passive: true,
-    });
+
     document.addEventListener("wheel", this.onScrollBound, false);
 
     // this.shift();
@@ -74,10 +88,15 @@ class Input {
   onScroll(event) {
     clearTimeout(this.timer);
     this.isScrolling = true;
-    this.currentScroll = event.deltaY;
-    this.scroll = this.scroll + this.currentScroll;
-    Device.scrollTop = -this.scroll / 4;
-    this.previousScroll = this.scroll;
+    this.currentScroll = -event.deltaY / 4;
+    this.clamp = Math.min(
+      Math.max(this.scroll + this.currentScroll, -Device.scrollHeight),
+      0,
+    );
+
+    this.scroll = this.clamp;
+
+    Device.scrollTop = this.clamp;
 
     this.timer = setTimeout(() => {
       this.isScrolling = false;
@@ -99,7 +118,36 @@ class Input {
 
   render() {
     this.delta.subVectors(this.coords, this.prevCoords);
+
     this.prevCoords.copy(this.coords);
+
+    if (!this.canDrag) {
+      if (this.inertia > 0) {
+        this.inertia -= 0.4;
+      } else if (this.inertia < 0) {
+        this.inertia += 0.4;
+      }
+
+      if (Math.abs(this.inertia) <= 0.1) {
+        this.inertia = 0;
+      }
+    }
+
+    if (
+      Math.abs(this.inertia) > 0.2 &&
+      this.scroll >= 0 &&
+      this.scroll <= Device.scrollHeight
+    ) {
+      this.scroll += this.inertia;
+
+      Device.scrollTop = -this.scroll;
+    } else {
+      if (Math.abs(this.velocity) <= 0.1) {
+        this.previousScroll = this.scroll;
+
+        this.inertia = 0;
+      }
+    }
 
     if (this.prevCoords.x === 0 && this.prevCoords.y === 0) {
       this.delta.set(0, 0);
@@ -109,34 +157,41 @@ class Input {
   onDocumentMouseMove(event) {
     this.setCoords(event.clientX, event.clientY);
   }
-
   onDocumentTouchStart(event) {
     if (event.touches.length === 1) {
-      event.preventDefault();
-      this.mouseMoved = true;
-      this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
-      gsap.to(this, {
-        mouseVelocity: 1,
-        duration: 0.8,
-        ease: "power1.out",
-      });
+      this.canDrag = true;
+      this.temp = 0;
+      this.inertia = 0;
+      // this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
+      this.prevPush = event.touches[0].pageY;
     }
   }
 
   onDocumentTouchMove(event) {
     if (event.touches.length === 1) {
-      event.preventDefault();
-      this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
-    }
-  }
+      clearTimeout(this.dragTimer);
+      // this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
 
-  onDocumentTouchEnd(event) {
-    if (event.touches.length === 0) {
-      gsap.to(this, {
-        mouseVelocity: 0,
-        duration: 0.4,
-        ease: "power1.out",
-      });
+      this.temp += 0.1;
+
+      // Calculate the change in Y position
+      this.push = this.prevPush - event.touches[0].pageY;
+
+      this.currentScroll = this.push * 0.8;
+
+      this.inertia = this.currentScroll / this.temp / 20;
+
+      // Adjust scroll calculation for better responsiveness
+      this.scroll = Math.min(
+        Math.max(this.previousScroll + this.currentScroll, 0),
+        Device.scrollHeight,
+      );
+
+      this.dragTimer = setTimeout(() => {
+        this.setCoords(0, 0);
+
+        this.canDrag = false;
+      }, 10);
     }
   }
 
@@ -148,7 +203,15 @@ class Input {
     this.interactivesObjects = [];
   }
 
-  resize() {}
+  resize() {
+    if (Device.scrollTop > 0) {
+      Device.scrollTop = 0;
+    } else if (Device.scrollTop < -Device.scrollHeight) {
+      Device.scrollTop = -Device.scrollHeight;
+      this.scroll = -Device.scrollHeight;
+      this.previousScroll = -Device.scrollHeight + 10;
+    }
+  }
 }
 
 export default new Input();

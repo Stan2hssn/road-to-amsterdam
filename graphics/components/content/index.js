@@ -49,41 +49,49 @@ export default class {
     H1: {
       scale: 0.85,
       lineHeight: 60,
+      letterSpacing: 0.5,
     },
 
     H2: {
       scale: 0.8,
       lineHeight: 60,
+      letterSpacing: 0.5,
     },
 
     H3: {
       scale: 0.6,
       lineHeight: 50,
+      letterSpacing: 0.5,
     },
 
     H4: {
       scale: 0.56,
       lineHeight: 60,
+      letterSpacing: 0.5,
     },
 
     H5: {
       scale: 0.38,
       lineHeight: 60,
+      letterSpacing: 0.5,
     },
 
     H6: {
       scale: 0.38,
       lineHeight: 60,
+      letterSpacing: 0.3,
     },
 
     P: {
       scale: 0.38,
       lineHeight: 52,
+      letterSpacing: 0.5,
     },
 
     A: {
-      scale: 0.38,
+      scale: 0.36,
       lineHeight: 60,
+      letterSpacing: 0.5,
     },
   };
 
@@ -177,8 +185,12 @@ export default class {
         contentMesh.rotation.x = -Math.PI;
         this.meshes[tagName][i] = contentMesh;
 
-        if (Common.pages.About.scenes[section.className]) {
-          Common.pages.About.scenes[section.className].add(contentMesh);
+        const sectionName = section.className.match("spc")
+          ? section.className.substring(section.className.length - 3, 0)
+          : section.className;
+
+        if (Common.pages.About.scenes[sectionName.trim()]) {
+          Common.pages.About.scenes[sectionName.trim()].add(contentMesh);
         }
       });
 
@@ -206,7 +218,7 @@ export default class {
     const { font, texture } = this.Fonts[fontFamily];
     const style = window.getComputedStyle(title);
     const align = style["text-align"];
-    const lineHeight = this.fontStyles[tagName].lineHeight;
+    const { lineHeight, letterSpacing } = this.fontStyles[tagName];
 
     const geometry = new MSDFTextGeometry({
       text,
@@ -215,7 +227,7 @@ export default class {
       align: align,
       flipY: true,
       lineHeight: lineHeight,
-      letterSpacing: 0.5,
+      letterSpacing: letterSpacing,
     });
 
     const material = new MSDFTextMaterial({});
@@ -247,7 +259,9 @@ export default class {
 
   dispose() {}
 
-  render(t) {}
+  render(t) {
+    this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
+  }
 
   resizeMesh(mesh, rect, textScale, height, width, text, scaleFactor, style) {
     const material = mesh.material;
@@ -304,7 +318,6 @@ export default class {
       Object.keys(this.meshes[tagName]).forEach((key) => {
         const rect = this.titles[key].getBoundingClientRect();
         const text = this.titles[key].innerText;
-        console.log("text", text);
 
         const style = window.getComputedStyle(this.titles[key]);
 
@@ -327,7 +340,7 @@ export default class {
           scaleFactor = 2.8;
         } else if (tagName == "P") {
           textScale = this.fontStyles.P.scale;
-          scaleFactor = 2.6;
+          scaleFactor = 2.64;
         } else if (tagName == "A") {
           textScale = this.fontStyles.A.scale;
           scaleFactor = 2.8;
