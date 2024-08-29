@@ -7,7 +7,7 @@ import Stats from "stats.js";
 export default class {
   constructor({ canvas, scrollContainer }) {
     this.stats = new Stats();
-    this.stats.showPanel(1);
+    this.stats.showPanel(0);
 
     document.body.appendChild(this.stats.dom);
     Input.init();

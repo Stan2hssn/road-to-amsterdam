@@ -1,13 +1,14 @@
 import Common from "./Common";
 import Device from "./pure/Device";
 
-import { Vector2, Raycaster } from "three";
+import { Vector2, Raycaster, Uniform } from "three";
 
 import gsap from "gsap";
+import { Group } from "three/examples/jsm/libs/tween.module.js";
 
 class Input {
   constructor() {
-    this.coords = new Vector2(0.5, 0);
+    this.coords = new Vector2(0, 0);
     this.camZ = 0;
 
     this.isScrolling = false;
@@ -39,13 +40,26 @@ class Input {
 
     this.mouseVelocity = 0;
 
-    this.onMouseMoveBound = this.onDocumentMouseMove.bind(this);
+    this.raycaster = new Raycaster();
+    this.raycasterCoords = new Vector2();
+    this.objectId = new Uniform(null);
+    this.isHovering = false;
+
+    if (!Device.isMobile) {
+      this.coords.set(-0.5, 0);
+
+      this.velocity = 0;
+      this.inertia = 0;
+      this.onMouseMoveBound = this.onDocumentMouseMove.bind(this);
+    }
     this.onTouchStartBound = this.onDocumentTouchStart.bind(this);
     this.onTouchMoveBound = this.onDocumentTouchMove.bind(this);
     this.onScrollBound = this.onScroll.bind(this);
   }
 
   init() {
+    this.interactivesObjects = Common.pages.About.groups.main.children;
+
     this.vTo = gsap.quickTo(this, "velocity", {
       duration: 0.2,
       ease: "power1.out",
@@ -156,7 +170,27 @@ class Input {
 
   onDocumentMouseMove(event) {
     this.setCoords(event.clientX, event.clientY);
+    // this.updateRaycatser();
   }
+
+  updateRaycatser() {
+    const pointer = this.coords;
+    this.raycaster.setFromCamera(pointer, Common.pages.About.cameras.main);
+
+    const intersects = this.raycaster.intersectObjects(
+      this.interactivesObjects,
+    );
+
+    if (intersects.length > 0) {
+      const { x, y } = intersects[0].point;
+
+      // this.raycasterCoords.set(x, y);
+      this.isHovering = true;
+    } else {
+      this.isHovering = false;
+    }
+  }
+
   onDocumentTouchStart(event) {
     if (event.touches.length === 1) {
       this.canDrag = true;
@@ -170,7 +204,6 @@ class Input {
   onDocumentTouchMove(event) {
     if (event.touches.length === 1) {
       clearTimeout(this.dragTimer);
-      // this.setCoords(event.touches[0].pageX, event.touches[0].pageY);
 
       this.temp += 0.1;
 
@@ -188,8 +221,6 @@ class Input {
       );
 
       this.dragTimer = setTimeout(() => {
-        this.setCoords(0, 0);
-
         this.canDrag = false;
       }, 10);
     }

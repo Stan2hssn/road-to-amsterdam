@@ -144,9 +144,9 @@ export default class {
 
       panel.position.set(
         Math.cos(angle) *
-          ((Input.scroll / Device.viewport.height) * 0.02 + 0.25),
+          ((-Input.scroll / Device.viewport.height) * 0.02 + 0.25),
         Math.sin(angle) *
-          ((Input.scroll / Device.viewport.height) * 0.02 + 0.25),
+          ((-Input.scroll / Device.viewport.height) * 0.02 + 0.25),
         0,
       );
 

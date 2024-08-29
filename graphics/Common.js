@@ -8,19 +8,8 @@ import {
   Color,
   PerspectiveCamera,
   WebGLRenderer,
-  Raycaster,
   Vector2,
-  PlaneGeometry,
-  MeshBasicMaterial,
-  DoubleSide,
-  Mesh,
-  SphereGeometry,
-  WebGLRenderTarget,
-  OrthographicCamera,
-  ShaderMaterial,
-  Uniform,
-  RGBAFormat,
-  LinearFilter,
+  Group,
 } from "three";
 
 class Common {
@@ -30,6 +19,11 @@ class Common {
     cameraFov: 52,
     cameraNear: 0.01,
     cameraFar: 10000.0,
+    depth: {
+      fov: 70,
+      near: 4,
+      far: 8,
+    },
   };
 
   mousePower = new Vector2(
@@ -40,15 +34,21 @@ class Common {
   pages = {
     About: {
       cameras: {
+        main: null,
         hero: {},
         key: {},
         story: {},
+        depth: {},
       },
       scenes: {
         main: new Scene(),
         hero: new Scene(),
         key: new Scene(),
         story: new Scene(),
+        depth: new Scene(),
+      },
+      groups: {
+        main: new Group(),
       },
     },
 
@@ -122,6 +122,15 @@ class Common {
     this.pages.About.cameras.key.main = this.setCamera();
     this.pages.About.scenes.story = new Scene();
     this.pages.About.cameras.story.main = this.setCamera();
+    this.pages.About.scenes.depth = new Scene();
+    this.pages.About.cameras.depth.main = new PerspectiveCamera(
+      this.params.depth.fov,
+      Device.viewport.width / Device.viewport.height,
+      this.params.depth.near,
+      this.params.depth.far,
+    );
+
+    this.pages.About.cameras.depth.main.userData = { depth: true };
 
     Object.keys(this.pages).forEach((pageKey) => {
       const page = this.pages[pageKey];
@@ -176,7 +185,7 @@ class Common {
     this.renderer.dispose();
   }
 
-  updateCamera(camera) {
+  updateCamera(camera, depth = true) {
     const aspect = Device.viewport.width / Device.viewport.height;
 
     if (aspect > 1) {
@@ -185,12 +194,17 @@ class Common {
       this.mousePower.set(Device.viewport.height / Device.viewport.width, 1);
     }
 
-    this.cameraZ =
-      (Device.viewport.height /
-        Math.tan((this.params.cameraFov * Math.PI) / 360)) *
-      0.5;
-    camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
-    camera.aspect = aspect;
+    if (depth) {
+      this.cameraZ =
+        (Device.viewport.height /
+          Math.tan((this.params.cameraFov * Math.PI) / 360)) *
+        0.5;
+      camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
+      camera.aspect = aspect;
+    } else {
+      camera.aspect = aspect;
+      camera.position.set(this.cameraX, 0, 0);
+    }
 
     camera.updateProjectionMatrix();
   }
@@ -200,11 +214,16 @@ class Common {
       const page = this.pages[pageKey];
       for (const cameraKey in page.cameras) {
         const camera = page.cameras[cameraKey];
+
         if (camera instanceof PerspectiveCamera) {
           this.updateCamera(camera);
         } else {
           for (const key in camera) {
-            this.updateCamera(camera[key]);
+            if (page.cameras[cameraKey].main.userData.depth) {
+              this.updateCamera(camera[key], false);
+            } else {
+              this.updateCamera(camera[key]);
+            }
           }
         }
       }

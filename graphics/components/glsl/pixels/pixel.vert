@@ -1,4 +1,5 @@
 varying vec2 vUv;
+varying vec3 vPos;
 
 void main() {
 
@@ -7,5 +8,6 @@ void main() {
 
     gl_Position = projectionMatrix * viewPosition;
 
+    vPos = position;
     vUv = uv;
 }

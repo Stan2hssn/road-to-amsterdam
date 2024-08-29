@@ -30,6 +30,17 @@ canvas {
   position: absolute;
 }
 
+.back_link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0;
+  /* background-color: #92bfd2; */
+}
+
 .scroll-container {
   z-index: 1;
   /* opacity: 0; */
@@ -116,7 +127,7 @@ canvas {
   display: flex;
   flex-direction: row;
   gap: 8rem;
-  opacity: 0;
+  /* opacity: 0; */
 }
 
 .story .experiences .col_expe {
@@ -146,6 +157,7 @@ canvas {
   flex-direction: column;
   justify-content: center;
   gap: 0.5rem;
+  /* opacity: 0; */
 }
 
 .story .experiences .col_expe .col_3 .col {
@@ -160,11 +172,16 @@ canvas {
   flex-direction: row;
   flex-wrap: wrap;
   gap: 0.5rem;
+  /* opacity: 0; */
 }
 
 .story .experiences .col_expe .col_3 .col .breakH6 h6 {
   width: auto;
   text-align: center;
+}
+
+.story .experiences .col_expe .col_3 .col p {
+  /* opacity: 0; */
 }
 
 .story .experiences .col_expe .col_3 .col .row {
@@ -173,6 +190,7 @@ canvas {
   align-items: center;
   gap: 8rem;
   padding: auto;
+  /* opacity: 0; */
 }
 
 .story .experiences .col_expe .col_3 .col .row .col {
@@ -334,4 +352,14 @@ a {
   font-family: "Satoshi Variable", sans-serif;
   white-space: nowrap;
   color: var(--blueSecondary);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  opacity: 0;
 }

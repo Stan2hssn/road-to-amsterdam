@@ -27,6 +27,7 @@ import backgroundGlassFragment from "./glsl/pixels/backgroundGlass.frag";
 import backgroundGlassVertex from "./glsl/pixels/backgroundGlass.vert";
 
 import Input from "../Input.js";
+import backLink from "./backLink/index.js";
 
 export default class {
   Component = {};
@@ -58,13 +59,11 @@ export default class {
 
     this.setBackgroundGlass();
 
-    this.Helpers.raycaster = new Raycaster();
+    // this.Helpers.raycaster = new Raycaster();
 
-    this.Component.Panel = new Panel(
-      this.Helpers.raycaster.raycasterCoords,
-      this.Helpers.raycaster.objectId,
-    );
+    this.Component.Panel = new Panel();
 
+    this.Component.backLink = new backLink();
     this.Component.Content = new Content();
     this.Component.Balls = new Balls();
     this.addObjects();
@@ -74,8 +73,6 @@ export default class {
     Object.keys(this.Screens).forEach((key) => {
       Common.pages.About.scenes.main.add(this.Screens[key]);
     });
-
-    // Common.pages.About.scenes.key.add(this.Component.transHero);
   }
 
   setBackgroundGlass() {
@@ -210,7 +207,7 @@ export default class {
       this.targets.about.key.texture;
   }
 
-  renderStory() {
+  renderStory(t) {
     Common.renderer.setRenderTarget(this.targets.about.story);
     Common.renderer.render(
       Common.pages.About.scenes.story,
@@ -228,17 +225,33 @@ export default class {
       }
     });
 
+    Object.keys(this.Helpers).forEach((key) => {
+      if (typeof this.Helpers[key].render === "function") {
+        this.Helpers[key].render(t);
+      }
+    });
+
     this.Background.glass.y = -Device.scrollTop * 0.1;
 
     this.renderHero();
     this.renderKey();
-    this.renderStory();
+    this.renderStory(t);
 
     Common.renderer.setRenderTarget(null);
     Common.renderer.render(
       Common.pages.About.scenes.main,
       Common.pages.About.cameras.main,
     );
+
+    // Common.renderer.render(
+    //   Common.pages.About.scenes.story,
+    //   Common.pages.About.cameras.story.main,
+    // );
+
+    // Common.renderer.render(
+    //   Common.pages.About.scenes.depth,
+    //   Common.pages.About.cameras.depth.main,
+    // );
   }
 
   resize(scale, height, width) {
