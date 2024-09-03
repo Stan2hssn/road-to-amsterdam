@@ -38,12 +38,14 @@ class Common {
         hero: {},
         key: {},
         story: {},
+        memory: {},
         depth: {},
       },
       scenes: {
         main: new Scene(),
         hero: new Scene(),
         key: new Scene(),
+        memory: new Scene(),
         story: new Scene(),
         depth: new Scene(),
       },
@@ -100,6 +102,7 @@ class Common {
       (Device.viewport.height /
         Math.tan((this.params.cameraFov * Math.PI) / 360)) *
       0.5;
+    this.newCameraZ = this.cameraZ;
 
     this.z = 300;
 
@@ -123,6 +126,9 @@ class Common {
     this.pages.About.scenes.story = new Scene();
     this.pages.About.cameras.story.main = this.setCamera();
     this.pages.About.scenes.depth = new Scene();
+    this.pages.About.scenes.memory = new Scene();
+    this.pages.About.cameras.memory.main = this.setCamera();
+
     this.pages.About.cameras.depth.main = new PerspectiveCamera(
       this.params.depth.fov,
       Device.viewport.width / Device.viewport.height,
@@ -152,32 +158,33 @@ class Common {
     const z = Input.camZ;
 
     this.cameraY = Device.scrollTop - y * 30 * this.mousePower.y;
+    this.newCameraZ = this.cameraZ + Input.scrollZ;
 
     this.scrollContainer.style.transform = `translate3d(0, ${Device.scrollTop}px, 0)`;
 
     this.pages.About.cameras.hero.main.position.set(
       this.cameraX - x * 40 * this.mousePower.x,
       -y * 60 * this.mousePower.y,
-      this.cameraZ - z * 40,
+      this.newCameraZ - z * 40,
     );
     this.pages.About.cameras.hero.main.lookAt(0, 0, 0);
 
     this.pages.About.cameras.main.position.set(
       this.cameraX - x * 1 * this.mousePower.x,
       this.cameraY,
-      this.cameraZ - z * 1,
+      this.newCameraZ - z * 1,
     );
 
     this.pages.About.cameras.key.main.position.set(
       this.cameraX - x * 1 * this.mousePower.x,
       this.cameraY,
-      this.cameraZ - z * 1,
+      this.newCameraZ - z * 1,
     );
 
     this.pages.About.cameras.story.main.position.set(
       this.cameraX - x * 1 * this.mousePower.x,
       this.cameraY,
-      this.cameraZ - z * 1,
+      this.newCameraZ - z * 1,
     );
   }
 

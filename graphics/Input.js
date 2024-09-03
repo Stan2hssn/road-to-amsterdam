@@ -10,6 +10,8 @@ class Input {
   constructor() {
     this.coords = new Vector2(0, 0);
     this.camZ = 0;
+    this.scrollZ = 0;
+    this.zoom = 0;
 
     this.isScrolling = false;
     this.canDrag = false;
@@ -59,6 +61,9 @@ class Input {
 
   init() {
     this.interactivesObjects = Common.pages.About.groups.main.children;
+    this.heart = document.querySelector(".heart").getBoundingClientRect();
+    this.limitUp = -this.heart.top + Device.viewport.height;
+    this.limitBottom = -this.heart.bottom - Device.viewport.height;
 
     this.vTo = gsap.quickTo(this, "velocity", {
       duration: 0.2,
@@ -77,6 +82,11 @@ class Input {
 
     this.zTo = gsap.quickTo(this, "camZ", {
       duration: 1,
+      ease: "power1.out",
+    });
+
+    this.scrollZTo = gsap.quickTo(this, "scrollZ", {
+      duration: 0.5,
       ease: "power1.out",
     });
 
@@ -111,6 +121,14 @@ class Input {
     this.scroll = this.clamp;
 
     Device.scrollTop = this.clamp;
+
+    if (this.clamp < this.limitUp && this.clamp > this.limitBottom) {
+      this.zoom = -event.deltaY * 3;
+      this.actualZoom = Math.min(Math.max(this.scrollZ + this.zoom, -200), 2);
+      this.scrollZTo(this.actualZoom);
+
+      console.log("scrollZ", this.scrollZ);
+    }
 
     this.timer = setTimeout(() => {
       this.isScrolling = false;

@@ -180,10 +180,6 @@ canvas {
   text-align: center;
 }
 
-.story .experiences .col_expe .col_3 .col p {
-  /* opacity: 0; */
-}
-
 .story .experiences .col_expe .col_3 .col .row {
   display: flex;
   justify-content: space-between;
@@ -221,6 +217,19 @@ canvas {
 
 .story .bio h6 {
   width: 100%;
+}
+
+.story .heart {
+  display: flex;
+  box-sizing: content-box;
+  width: 40%;
+  height: auto;
+  aspect-ratio: 1/1;
+  padding: 40vw 0rem;
+  margin: auto;
+
+  /* background-color: #236a88; */
+  /* border: #236a88 1px solid; */
 }
 
 @media screen and (max-width: 1080px) {

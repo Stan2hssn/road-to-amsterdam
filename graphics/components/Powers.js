@@ -28,6 +28,7 @@ import backgroundGlassVertex from "./glsl/pixels/backgroundGlass.vert";
 
 import Input from "../Input.js";
 import backLink from "./backLink/index.js";
+import heart from "./heart/index.js";
 
 export default class {
   Component = {};
@@ -56,6 +57,7 @@ export default class {
     this.Screens.hero = this.createScreen("hero");
     this.Screens.key = this.createScreen("key", true);
     this.Screens.story = this.createScreen("story");
+    // this.Screens.memory = this.createScreen("memory");
 
     this.setBackgroundGlass();
 
@@ -66,6 +68,7 @@ export default class {
     this.Component.backLink = new backLink();
     this.Component.Content = new Content();
     this.Component.Balls = new Balls();
+    this.Component.heart = new heart();
     this.addObjects();
   }
 
@@ -120,6 +123,7 @@ export default class {
         hero: this.getRenderTarget(),
         key: this.getRenderTarget(),
         story: this.getRenderTarget(),
+        memory: this.getRenderTarget(),
       },
     };
   }
@@ -218,6 +222,17 @@ export default class {
       this.targets.about.story.texture;
   }
 
+  renderMemory(t) {
+    Common.renderer.setRenderTarget(this.targets.about.memory);
+    Common.renderer.render(
+      Common.pages.About.scenes.memory,
+      Common.pages.About.cameras.memory.main,
+    );
+
+    this.Screens.memory.material.uniforms.uTexture.value =
+      this.targets.about.memory.texture;
+  }
+
   render(t) {
     Object.keys(this.Component).forEach((key) => {
       if (typeof this.Component[key].render === "function") {
@@ -236,6 +251,7 @@ export default class {
     this.renderHero();
     this.renderKey();
     this.renderStory(t);
+    // this.renderMemory(t);
 
     Common.renderer.setRenderTarget(null);
     Common.renderer.render(
