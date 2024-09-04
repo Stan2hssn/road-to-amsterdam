@@ -126,7 +126,7 @@ class Common {
     this.pages.About.scenes.story = new Scene();
     this.pages.About.cameras.story.main = this.setCamera();
     this.pages.About.scenes.depth = new Scene();
-    this.pages.About.scenes.memory = new Scene();
+    // this.pages.About.scenes.memory = new Scene();
     this.pages.About.cameras.memory.main = this.setCamera();
 
     this.pages.About.cameras.depth.main = new PerspectiveCamera(

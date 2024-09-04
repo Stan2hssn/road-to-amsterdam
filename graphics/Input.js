@@ -100,12 +100,12 @@ class Input {
 
     document.addEventListener("wheel", this.onScrollBound, false);
 
-    // this.shift();
+    this.shift();
   }
 
   shift() {
     setTimeout(() => {
-      Device.scrollTop = -this.scroll / 4 - 2300;
+      Device.scrollTop = -this.scroll / 4 - 4000;
     }, 0);
   }
 
@@ -126,8 +126,6 @@ class Input {
       this.zoom = -event.deltaY * 3;
       this.actualZoom = Math.min(Math.max(this.scrollZ + this.zoom, -200), 2);
       this.scrollZTo(this.actualZoom);
-
-      console.log("scrollZ", this.scrollZ);
     }
 
     this.timer = setTimeout(() => {

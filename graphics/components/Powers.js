@@ -46,8 +46,8 @@ export default class {
 
   loadTextures() {
     this.textures = {
-      frostedGlass: this.loader.load("./Texture/frostedGlass.jpg"),
-      noiseTexture: this.loader.load("./Texture/noise_light.jpg"),
+      frostedGlass: this.loader.load("./Texture/Maps/frostedGlass.jpg"),
+      noiseTexture: this.loader.load("./Texture/Maps/noise_light.jpg"),
     };
   }
 
