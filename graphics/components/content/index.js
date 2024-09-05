@@ -224,8 +224,6 @@ export default class {
 
     await Promise.all(promises);
 
-    console.log("dummy", this.Dummy);
-
     this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
   }
 

@@ -14,12 +14,14 @@ uniform float uDiffuseness;
 uniform float uZoom;
 uniform float uShiftY;
 uniform float uShiftX;
+uniform float uTransmission;
 
 uniform vec2 uResolution;
 
 uniform vec3 uLight;
 
 uniform sampler2D uVideoTexture;
+uniform sampler2D uTexture;
 
 varying vec2 vUv;
 varying vec3 worldNormal;
@@ -126,8 +128,12 @@ void main() {
     float f = fresnel(eyeVector, normal, uFresnelPower);
     color.rgb += f * vec3(.050);
 
-    vec4 colorTest = texture2D(uVideoTexture, winUv);
+    vec4 colorTest = texture2D(uTexture, gl_FragCoord.xy / uResolution.xy - .1);
+    vec4 screen = texture2D(uVideoTexture, winUv);
 
+    gl_FragColor = vec4(winUv, 1., 1.);
     gl_FragColor = vec4(colorTest.rgb, 1.);
+    gl_FragColor = vec4(screen.rgb, 1.);
+    gl_FragColor = vec4(mix(screen.rgb, colorTest.rgb, uTransmission), 1.);
     gl_FragColor = color;
 }

@@ -1,5 +1,13 @@
 uniform float uTime;
 
+uniform float morphTargetInfluences[5];
+
+attribute vec3 morphTarget0;
+attribute vec3 morphTarget1;
+attribute vec3 morphTarget2;
+attribute vec3 morphTarget3;
+attribute vec3 morphTarget4;
+
 uniform mat4 projectionMatrixCamera;
 uniform mat4 viewMatrixCamera;
 
@@ -24,8 +32,15 @@ float noise(vec2 p) {
 }
 
 void main() {
+    vec3 morphed = position;
+    morphed += morphTarget0 * morphTargetInfluences[0];
+    morphed += morphTarget1 * morphTargetInfluences[1];
+    morphed += morphTarget2 * morphTargetInfluences[2];
+    morphed += morphTarget3 * morphTargetInfluences[3];
+    morphed += morphTarget4 * morphTargetInfluences[4];
+
     float time = uTime * 0.005;
-    vec3 pos = position;
+    vec3 pos = morphed;
 
     vNormal = mat3(modelMatrix) * normal;
     vWorldPosition = modelMatrix * vec4(position, 1.0);

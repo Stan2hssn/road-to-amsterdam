@@ -18,6 +18,7 @@ import {
   VideoTexture,
   Matrix3,
   Matrix4,
+  WebGLRenderTarget,
 } from "three";
 
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -28,6 +29,8 @@ import Device from "../..//pure/Device";
 
 import vertexShader from "../glsl/heart/heart.vert";
 import fragmentShader from "../glsl/heart/heart.frag";
+import { BackSide } from "three";
+import { FrontSide } from "three";
 
 export default class {
   params = {
@@ -35,22 +38,27 @@ export default class {
     uSaturation: 1,
     uRefractPower: 0.1,
     uChromaticAberration: 0.9,
-    uFresnelPower: 10.0,
+    uFresnelPower: 7.0,
     uIorR: 1.16,
     uIorY: 1.15,
     uIorG: 1.14,
     uIorC: 1.22,
     uIorB: 1.22,
     uIorP: 1.22,
-    uShininess: 30,
-    uDiffuseness: 4,
+    uShininess: 40,
+    uDiffuseness: 1,
     uLight: new Vector3(1, 1.9, 0.3),
     uZoom: 2.4,
     uShiftY: 0.8,
     uShiftX: 2.35,
   };
 
-  constructor(posX, posY, posZ) {
+  constructor(target1, target2) {
+    this.backSide = new WebGLRenderTarget(
+      Device.viewport.width * Device.pixelRatio,
+      Device.viewport.height * Device.pixelRatio,
+    );
+    this.frontSide = target2;
     this.pane = new Pane();
     this.modelLoader = new GLTFLoader();
     this.loader = new TextureLoader();
@@ -70,12 +78,9 @@ export default class {
     const video = document.getElementById("video");
     video.muted = true;
     video.play();
-    console.log("video", video);
 
     this.video = new VideoTexture(video);
     this.video.colorSpace = SRGBColorSpace;
-
-    console.log("this.textures.video", this.video);
   }
 
   init() {
@@ -102,13 +107,21 @@ export default class {
             Device.viewport.height,
           ).multiplyScalar(Device.pixelRatio),
         ),
+
+        // Camera
         viewMatrixCamera: new Uniform(viewMatrixCamera),
         projectionMatrixCamera: new Uniform(projectionMatrixCamera),
         modelMatrixCamera: new Uniform(modelMatrixCamera),
         projPosition: new Uniform(projPosition),
+
+        // Textures
         uTexture: new Uniform(null),
-        uTransmission: new Uniform(0),
         uVideoTexture: new Uniform(this.video),
+
+        // Transition
+        uTransmission: new Uniform(0),
+
+        // Refraction
         uSaturation: new Uniform(this.params.uSaturation),
         uRefractPower: new Uniform(this.params.uRefractPower),
         uChromaticAberration: new Uniform(this.params.uChromaticAberration),
@@ -122,22 +135,19 @@ export default class {
         uShininess: new Uniform(this.params.uShininess),
         uDiffuseness: new Uniform(this.params.uDiffuseness),
         uLight: new Uniform(this.params.uLight),
+
+        // Focus
         uZoom: new Uniform(this.params.uZoom),
         uShiftY: new Uniform(this.params.uShiftY),
         uShiftX: new Uniform(this.params.uShiftX),
+
+        // Add the morph target influences uniform for animation
+        morphTargetInfluences: new Uniform(this.params.morphTargetInfluences),
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       // wireframe: true,
     });
-
-    console.log(
-      "projPosition",
-      this.material.uniforms.viewMatrixCamera,
-      this.material.uniforms.projectionMatrixCamera,
-      this.material.uniforms.modelMatrixCamera,
-      this.material.uniforms.projPosition,
-    );
 
     this.modelLoader.load("/Models/Heart_V3.glb", (gltf) => {
       gltf.scene.position.set(0, 0, -200);
@@ -175,7 +185,38 @@ export default class {
       this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
     });
 
-    this.dummy = new Mesh(new PlaneGeometry(1, 1), this.material);
+    this.dummy = new Mesh(
+      new PlaneGeometry(1, 1),
+      new ShaderMaterial({
+        vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+        fragmentShader: `
+        varying vec2 vUv;
+        uniform sampler2D uTexture;
+        uniform vec2 uResolution;
+        void main() {
+            vec2 winUv = gl_FragCoord.xy / uResolution.xy;
+          vec4 texture = texture2D(uTexture, vUv);
+
+          gl_FragColor = vec4(winUv, 1.0, 1.0);
+          gl_FragColor = texture;
+        }
+        `,
+        uniforms: {
+          uResolution: new Uniform(
+            new Vector2(
+              Device.viewport.width,
+              Device.viewport.height,
+            ).multiplyScalar(Device.pixelRatio),
+          ),
+          uTexture: new Uniform(null),
+        },
+      }),
+    );
 
     // Common.pages.About.scenes.story.add(this.dummy);
   }
@@ -188,15 +229,31 @@ export default class {
   render(t) {
     this.elapsedTime = t - this.previousTime;
     this.previousTime = t;
-    // this.material.uniforms.uTime.value = t * 0.001;
+    this.material.uniforms.uTime.value = t * 0.001;
 
-    // if (this.mixer) {
-    //   this.mixer.update(this.elapsedTime * 0.001);
+    if (this.mixer) {
+      this.mixer.update(this.elapsedTime * 0.001);
+      this.material.uniforms.morphTargetInfluences.value =
+        this.gltf.morphTargetInfluences.slice();
+    }
 
-    //   // Update the morph target influences uniform
-    //   this.material.uniforms.morphTargetInfluences.value =
-    //     this.gltf.morphTargetInfluences.slice();
-    // }
+    if (!this.gltf) return;
+
+    // this.material.uniforms.uTransmission.value = 0;
+    // this.gltf.material.side = BackSide;
+
+    // // Glass Material - FrontSide
+    // Common.renderer.setRenderTarget(this.backSide);
+    // Common.renderer.render(
+    //   Common.pages.About.scenes.story,
+    //   Common.pages.About.cameras.main,
+    // );
+    // this.gltf.material.uniforms.uTexture.value = this.backSide.texture;
+    // // this.dummy.material.uniforms.uTexture.value = this.backSide.texture;
+
+    // this.gltf.material.uniforms.uTransmission.value = 1;
+
+    // this.gltf.material.side = FrontSide;
   }
 
   resize(scale, height, width) {
@@ -207,6 +264,9 @@ export default class {
     this.material.uniforms.uResolution.value
       .set(Device.viewport.width, Device.viewport.height)
       .multiplyScalar(Device.pixelRatio);
+
+    this.dummy.material.uniforms.uResolution.value =
+      this.material.uniforms.uResolution.value;
 
     if (!this.gltf) return;
     const rect = document.querySelector(".heart").getBoundingClientRect();
@@ -221,7 +281,7 @@ export default class {
 
     this.dummy.position.set(
       rect.left + rect.width * 0.5 - width * 0.5,
-      -rect.top + Device.scrollTop - rect.height * 0.5 + height * 0.5,
+      -rect.top + Device.scrollTop - rect.height * 0.5 + height * 0.5 + 500,
       0,
     );
 
@@ -269,6 +329,127 @@ export default class {
       })
       .on("change", () => {
         this.material.uniforms.uShiftX.value = this.params.uShiftX;
+      });
+
+    debug
+      .addBinding(this.params, "uSaturation", {
+        label: "Saturation",
+        min: 0,
+        max: 2,
+      })
+      .on("change", () => {
+        this.material.uniforms.uSaturation.value = this.params.uSaturation;
+      });
+
+    debug
+      .addBinding(this.params, "uRefractPower", {
+        label: "Refract Power",
+        min: 0,
+        max: 1,
+      })
+      .on("change", () => {
+        this.material.uniforms.uRefractPower.value = this.params.uRefractPower;
+      });
+
+    debug
+      .addBinding(this.params, "uChromaticAberration", {
+        label: "Chromatic Aberration",
+        min: 0,
+        max: 1,
+      })
+      .on("change", () => {
+        this.material.uniforms.uChromaticAberration.value =
+          this.params.uChromaticAberration;
+      });
+
+    debug
+      .addBinding(this.params, "uFresnelPower", {
+        label: "Fresnel Power",
+        min: 0,
+        max: 10,
+      })
+      .on("change", () => {
+        this.material.uniforms.uFresnelPower.value = this.params.uFresnelPower;
+      });
+
+    debug
+      .addBinding(this.params, "uIorR", {
+        label: "IorR",
+        min: 1,
+        max: 2,
+      })
+      .on("change", () => {
+        this.material.uniforms.uIorR.value = this.params.uIorR;
+      });
+
+    debug
+      .addBinding(this.params, "uIorY", {
+        label: "IorY",
+        min: 1,
+        max: 2,
+      })
+      .on("change", () => {
+        this.material.uniforms.uIorY.value = this.params.uIorY;
+      });
+
+    debug
+      .addBinding(this.params, "uIorG", {
+        label: "IorG",
+        min: 1,
+        max: 2,
+      })
+      .on("change", () => {
+        this.material.uniforms.uIorG.value = this.params.uIorG;
+      });
+
+    debug
+      .addBinding(this.params, "uIorC", {
+        label: "IorC",
+        min: 1,
+        max: 2,
+      })
+      .on("change", () => {
+        this.material.uniforms.uIorC.value = this.params.uIorC;
+      });
+
+    debug
+      .addBinding(this.params, "uIorB", {
+        label: "IorB",
+        min: 1,
+        max: 2,
+      })
+      .on("change", () => {
+        this.material.uniforms.uIorB.value = this.params.uIorB;
+      });
+
+    debug
+      .addBinding(this.params, "uIorP", {
+        label: "IorP",
+        min: 1,
+        max: 2,
+      })
+      .on("change", () => {
+        this.material.uniforms.uIorP.value = this.params.uIorP;
+      });
+
+    debug
+      .addBinding(this.params, "uShininess", {
+        label: "Shininess",
+        min: 0,
+        max: 100,
+      })
+      .on("change", () => {
+        this.material.uniforms.uShininess.value = this.params.uShininess;
+      });
+
+    debug
+      .addBinding(this.params, "uDiffuseness", {
+        label: "Diffuseness",
+        min: 0,
+        max: 1,
+      })
+      .on("change", () => {
+        this.material.uniforms.uDiffuseness.value = this.params.uDiffuseness;
       });
   }
 }

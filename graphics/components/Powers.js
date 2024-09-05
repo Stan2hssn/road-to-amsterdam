@@ -68,7 +68,10 @@ export default class {
     this.Component.backLink = new backLink();
     this.Component.Content = new Content();
     this.Component.Balls = new Balls();
-    this.Component.heart = new heart();
+    this.Component.heart = new heart(
+      this.targets.memory.backSide,
+      this.targets.memory.frontSide,
+    );
     this.addObjects();
   }
 
@@ -123,7 +126,10 @@ export default class {
         hero: this.getRenderTarget(),
         key: this.getRenderTarget(),
         story: this.getRenderTarget(),
-        memory: this.getRenderTarget(),
+      },
+      memory: {
+        backSide: this.getRenderTarget(),
+        frontSide: this.getRenderTarget(),
       },
     };
   }
@@ -223,14 +229,14 @@ export default class {
   }
 
   renderMemory(t) {
-    Common.renderer.setRenderTarget(this.targets.about.memory);
-    Common.renderer.render(
-      Common.pages.About.scenes.memory,
-      Common.pages.About.cameras.memory.main,
-    );
-
-    this.Screens.memory.material.uniforms.uTexture.value =
-      this.targets.about.memory.texture;
+    // Common.renderer.setRenderTarget(this.targets.about.memory);
+    // Common.renderer.render(
+    //   Common.pages.About.scenes.memory,
+    //   Common.pages.About.cameras.memory.main,
+    // );
+    // this.Component.heart.side = BackSide;
+    // this.Screens.memory.material.uniforms.uTexture.value =
+    //   this.targets.about.memory.texture;
   }
 
   render(t) {

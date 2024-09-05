@@ -105,7 +105,7 @@ class Input {
 
   shift() {
     setTimeout(() => {
-      Device.scrollTop = -this.scroll / 4 - 4000;
+      Device.scrollTop = -this.scroll / 4 - 3800;
     }, 0);
   }
 
