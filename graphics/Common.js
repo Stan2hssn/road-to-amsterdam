@@ -50,7 +50,7 @@ class Common {
         depth: new Scene(),
       },
       groups: {
-        main: new Group(),
+        main: null,
       },
     },
 
@@ -92,7 +92,6 @@ class Common {
 
     this.renderer.physicallyCorrectLights = true;
     this.renderer.setPixelRatio(Device.pixelRatio);
-    this.debug = window.location.hash === "#debug" ? new Pane() : null;
   }
 
   setCamera() {
@@ -129,14 +128,7 @@ class Common {
     // this.pages.About.scenes.memory = new Scene();
     this.pages.About.cameras.memory.main = this.setCamera();
 
-    this.pages.About.cameras.depth.main = new PerspectiveCamera(
-      this.params.depth.fov,
-      Device.viewport.width / Device.viewport.height,
-      this.params.depth.near,
-      this.params.depth.far,
-    );
-
-    this.pages.About.cameras.depth.main.userData = { depth: true };
+    this.pages.About.groups.main = new Group();
 
     Object.keys(this.pages).forEach((pageKey) => {
       const page = this.pages[pageKey];
@@ -156,8 +148,11 @@ class Common {
 
     const { x, y } = Input.coords;
     const z = Input.camZ;
+    const scrollZ = Input.scrollZ;
+    const mousePowerIn = Input.mousePowerIn;
 
-    this.cameraY = Device.scrollTop - y * 30 * this.mousePower.y;
+    this.cameraY =
+      Device.scrollTop - y * 30 * ((this.mousePower.y * mousePowerIn) / 5);
     this.newCameraZ = this.cameraZ + Input.scrollZ;
 
     this.scrollContainer.style.transform = `translate3d(0, ${Device.scrollTop}px, 0)`;
@@ -182,10 +177,12 @@ class Common {
     );
 
     this.pages.About.cameras.story.main.position.set(
-      this.cameraX - x * 1 * this.mousePower.x,
+      (this.cameraX - x * this.mousePower.x) * mousePowerIn * 2,
       this.cameraY,
-      this.newCameraZ - z * 1,
+      this.newCameraZ - z * (mousePowerIn / 40),
     );
+
+    this.pages.About.cameras.story.main.lookAt(0, this.cameraY, -200);
   }
 
   dispose() {
@@ -257,9 +254,9 @@ class Common {
   }
 
   setDebug(debug) {
-    if (this.debug) {
-      this.debug = this.debug.addFolder({ title: "Scene", expanded: true });
-    }
+    this.debug = new Pane();
+
+    this.debug = this.debug.addFolder({ title: "Scene", expanded: true });
   }
 }
 

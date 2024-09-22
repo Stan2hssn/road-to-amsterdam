@@ -414,21 +414,21 @@ export default class {
   }
 
   debug(debug) {
-    debug
-      .addBinding(this.fontStyles.H3, "lineHeight", {
-        label: "Line Height",
-        min: 0,
-        max: 100,
-        step: 1,
-      })
-      .on("change", () => {
-        Object.keys(this.meshes).forEach((tagName) => {
-          Object.keys(this.meshes[tagName]).forEach((key) => {
-            this.meshes[tagName][key].geometry.update({
-              lineHeight: this.fontStyles.H3.lineHeight,
-            });
-          });
-        });
-      });
+    // debug
+    //   .addBinding(this.fontStyles.H3, "lineHeight", {
+    //     label: "Line Height",
+    //     min: 0,
+    //     max: 100,
+    //     step: 1,
+    //   })
+    //   .on("change", () => {
+    //     Object.keys(this.meshes).forEach((tagName) => {
+    //       Object.keys(this.meshes[tagName]).forEach((key) => {
+    //         this.meshes[tagName][key].geometry.update({
+    //           lineHeight: this.fontStyles.H3.lineHeight,
+    //         });
+    //       });
+    //     });
+    //   });
   }
 }

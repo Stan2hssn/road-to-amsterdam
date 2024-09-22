@@ -16,7 +16,7 @@ export default class {
   init() {
     this.component.powers = new Powers();
 
-    // this.helpers.controls = new Controls();
+    this.helpers.controls = new Controls();
     // this.helpers.grid = new GridHelper(10, 10);
   }
 
@@ -51,6 +51,8 @@ export default class {
     });
   }
   debug(Pane) {
+    if (Pane === null) return;
+
     Object.keys(this.component).forEach((key) => {
       this.component[key].debug(Common.debug);
     });

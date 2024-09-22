@@ -1,10 +1,9 @@
 import Common from "./Common";
 import Device from "./pure/Device";
 
-import { Vector2, Raycaster, Uniform } from "three";
+import { Vector2, Raycaster, Uniform, Vector3 } from "three";
 
 import gsap from "gsap";
-import { Group } from "three/examples/jsm/libs/tween.module.js";
 
 class Input {
   constructor() {
@@ -12,6 +11,7 @@ class Input {
     this.camZ = 0;
     this.scrollZ = 0;
     this.zoom = 0;
+    this.mousePowerIn = 1;
 
     this.isScrolling = false;
     this.canDrag = false;
@@ -24,6 +24,7 @@ class Input {
     this.dragDelta = new Vector2();
 
     this.delta = new Vector2();
+    this.rayDelta = new Vector2();
     this.timer = null;
     this.temp = 0;
 
@@ -35,7 +36,8 @@ class Input {
 
     this.count = 0;
 
-    this.velocity = 0;
+    this.velocity = new Uniform(0);
+    this.rayVelocity = 0;
     this.inertia = 0;
 
     this.dragTimer = null;
@@ -43,7 +45,9 @@ class Input {
     this.mouseVelocity = 0;
 
     this.raycaster = new Raycaster();
-    this.raycasterCoords = new Vector2();
+    this.raycasterCoords = new Vector3(0, 0, 0);
+    this.prevRayCoords = new Vector3(0, 0, 0);
+    this.interactivesObjects = [];
     this.objectId = new Uniform(null);
     this.isHovering = false;
 
@@ -57,10 +61,10 @@ class Input {
     this.onTouchStartBound = this.onDocumentTouchStart.bind(this);
     this.onTouchMoveBound = this.onDocumentTouchMove.bind(this);
     this.onScrollBound = this.onScroll.bind(this);
+    this.onMouseOutBound = this.onMouseOutBound.bind(this);
   }
 
   init() {
-    this.interactivesObjects = Common.pages.About.groups.main.children;
     this.heart = document.querySelector(".heart").getBoundingClientRect();
     this.limitUp = -this.heart.top + Device.viewport.height;
     this.limitBottom = -this.heart.bottom - Device.viewport.height;
@@ -76,7 +80,7 @@ class Input {
     });
 
     this.yTo = gsap.quickTo(this.coords, "y", {
-      duration: 1,
+      duration: 0.6,
       ease: "power2.out",
     });
 
@@ -90,22 +94,41 @@ class Input {
       ease: "power1.out",
     });
 
+    this.xRay = gsap.quickTo(this.raycasterCoords, "x", {
+      duration: 0.3,
+      ease: "power1.out",
+    });
+
+    this.yRay = gsap.quickTo(this.raycasterCoords, "y", {
+      duration: 0.3,
+      ease: "power1.out",
+    });
+
+    this.zRay = gsap.quickTo(this.raycasterCoords, "z", {
+      duration: 0.3,
+      ease: "power1.out",
+    });
+
     document.addEventListener("mousemove", this.onMouseMoveBound, false);
+    document.addEventListener("mouseout", this.onMouseOutBound, false); // Add mouseout listener here
+
     document.addEventListener("touchstart", this.onTouchStartBound, {
       passive: false,
     });
-    document.addEventListener("touchmove", this.onTouchMoveBound, {
-      passive: false,
-    });
+    // document.addEventListener("touchmove", this.onTouchMoveBound, {
+    //   passive: false,
+    // });
 
-    document.addEventListener("wheel", this.onScrollBound, false);
+    // document.addEventListener("wheel", this.onScrollBound, false);
 
     this.shift();
   }
 
   shift() {
     setTimeout(() => {
-      Device.scrollTop = -this.scroll / 4 - 3800;
+      Device.scrollTop = -this.scroll / 4 - Device.scrollHeight + 100;
+      this.scrollZ = -200;
+      this.mousePowerIn = 0;
     }, 0);
   }
 
@@ -126,6 +149,9 @@ class Input {
       this.zoom = -event.deltaY * 3;
       this.actualZoom = Math.min(Math.max(this.scrollZ + this.zoom, -200), 2);
       this.scrollZTo(this.actualZoom);
+      // this.mousePowerIn = this.actualZoom / 10;
+
+      console.log("this.actualZoom", this.actualZoom / 5);
     }
 
     this.timer = setTimeout(() => {
@@ -133,23 +159,50 @@ class Input {
     }, 100);
   }
 
+  onMouseOutBound(event) {
+    this.isHovering = false;
+    this.isIn = false;
+  }
+
   setCoords(x, y) {
     if (this.timer) clearTimeout(this.timer);
 
+    this.isIn = true;
+    this.mouseMoved = true;
+
+    // Update the coordinates smoothly
     this.xTo((x / Device.viewport.width) * 2 - 1);
     this.yTo(-(y / Device.viewport.height) * 2 + 1);
     this.zTo(Math.abs((x / Device.viewport.width) * 2 - 1));
 
-    this.mouseMoved = true;
+    // If the user is no longer hovering, reset rayVelocity
+
+    // Start a timer to check if the user is inactive
     this.timer = setTimeout(() => {
       this.mouseMoved = false;
-    }, 100);
+
+      // Reset the coordinates to 0, 0
+      this.prevRayCoords.copy(this.raycasterCoords);
+    }, 1000); // Delay before considering the user inactive
   }
 
   render() {
     this.delta.subVectors(this.coords, this.prevCoords);
-
     this.prevCoords.copy(this.coords);
+
+    if (this.mouseMoved) {
+      this.updateRaycaster();
+    }
+
+    // Ensure rayVelocity is reset when not hovering
+    if (!this.isIn || !this.isHovering) {
+      gsap.to(this, {
+        rayVelocity: 0,
+        duration: 0.3,
+        ease: "power2.ioOut",
+        overwrite: "auto",
+      });
+    }
 
     if (!this.canDrag) {
       if (this.inertia > 0) {
@@ -186,10 +239,9 @@ class Input {
 
   onDocumentMouseMove(event) {
     this.setCoords(event.clientX, event.clientY);
-    // this.updateRaycatser();
   }
 
-  updateRaycatser() {
+  updateRaycaster() {
     const pointer = this.coords;
     this.raycaster.setFromCamera(pointer, Common.pages.About.cameras.main);
 
@@ -198,12 +250,26 @@ class Input {
     );
 
     if (intersects.length > 0) {
-      const { x, y } = intersects[0].point;
+      if (!this.isHovering) {
+        this.isHovering = true;
 
-      // this.raycasterCoords.set(x, y);
-      this.isHovering = true;
-    } else {
+        gsap.to(this, { rayVelocity: 1, duration: 1 });
+      }
+
+      this.rayDelta.subVectors(this.raycasterCoords, this.prevRayCoords);
+
+      if (this.rayDelta.x === 50 && this.rayDelta.y === 50) {
+        const { x, y, z } = intersects[0].point;
+        this.xRay(x);
+        this.yRay(y);
+        this.zRay(z);
+      } else {
+        this.raycasterCoords.copy(intersects[0].point);
+      }
+    } else if (this.isHovering && this.isIn) {
+      // If no objects intersect but the mouse is still inside the viewport
       this.isHovering = false;
+      gsap.to(this, { rayVelocity: 0, duration: 0.1 });
     }
   }
 

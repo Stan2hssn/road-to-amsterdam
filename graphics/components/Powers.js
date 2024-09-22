@@ -265,10 +265,10 @@ export default class {
       Common.pages.About.cameras.main,
     );
 
-    // Common.renderer.render(
-    //   Common.pages.About.scenes.story,
-    //   Common.pages.About.cameras.story.main,
-    // );
+    Common.renderer.render(
+      Common.pages.About.scenes.story,
+      Common.pages.About.cameras.story.main,
+    );
 
     // Common.renderer.render(
     //   Common.pages.About.scenes.depth,

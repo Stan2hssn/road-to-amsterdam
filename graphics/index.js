@@ -19,8 +19,11 @@ export default class {
   }
 
   init() {
-    if (Common.debug !== null) {
-      Common.setDebug();
+    window.location.hash === "#debug"
+      ? Common.setDebug()
+      : console.log("no debug");
+
+    if (Common.debug) {
       this.output.debug();
     }
     this.resize();
