@@ -1,37 +1,83 @@
-import { Group } from "three";
+import {
+  Group,
+  Mesh,
+  ShaderMaterial,
+  Vector2,
+  PlaneGeometry,
+  WebGLRenderTarget,
+} from "three";
 
 import Common from "../Common";
 
-import Floor from "./starter/Floor";
-import Cube from "./starter/Cube";
+import Floor from "./Floor";
+import Clouds from "./Clouds";
+import FullScreenTriangles from "../helpers/FullScreenTriangles";
+
+import BicubicUpscaleMaterial from "./shaders/extends/BicubicUpscaleMaterial";
+import Device from "../pure/Device";
 
 export default class {
-  Starter = {};
+  Components = {};
+  Targets = {};
 
   constructor() {
+    this.initTargets();
     this.init();
   }
 
+  getRenderTexture() {
+    return new WebGLRenderTarget(1, 1);
+  }
+
+  initTargets() {
+    this.Targets.cloudsTarget = this.getRenderTexture();
+  }
+
+  initFilter() {
+    this.screenGeometry = FullScreenTriangles();
+    this.screenMaterial = new BicubicUpscaleMaterial();
+
+    this.screen = new Mesh(this.screenGeometry, this.screenMaterial);
+
+    Common.scene.add(this.screen);
+  }
+
+  initComponents() {
+    this.ComponentsGroup = new Group();
+    this.Clouds = new Clouds(0, 0, 1);
+  }
+
   init() {
-    this.StarterGroup = new Group();
-
-    this.Starter.floor = new Floor();
-    this.Starter.Cube = new Cube(0, 1.2, 0);
-
-    Object.keys(this.Starter).forEach((key) => {
-      this.StarterGroup.add(this.Starter[key].mesh);
-    });
-
-    Common.scene.add(this.StarterGroup);
+    this.initFilter();
+    this.initComponents();
   }
 
   dispose() {}
 
   render(t) {
-    Object.keys(this.Starter).forEach((key) => {
-      this.Starter[key].render(t);
-    });
+    // Update the clouds animation
+    this.Clouds.render(t);
+
+    Common.renderer.setRenderTarget(this.Targets.cloudsTarget);
+    Common.renderer.render(Common.filterScene, Common.filterCamera);
+
+    // Use the texture from cloudsTarget for full-screen upscaling
+    this.screenMaterial.uniforms.uTexture.value =
+      this.Targets.cloudsTarget.texture;
+
+    // Render the final scene using the main camera
+    Common.renderer.setRenderTarget(null);
+    Common.renderer.render(Common.scene, Common.camera);
   }
 
-  resize() {}
+  resize() {
+    this.Clouds.resize();
+
+    Object.values(this.Targets).forEach((target) => {
+      target.setSize(
+        Device.viewport.width * Device.cloudsResolution,
+        Device.viewport.height * Device.cloudsResolution,
+      );
+    });
+  }
 }

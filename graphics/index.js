@@ -2,8 +2,13 @@ import Common from "./Common";
 import Output from "./Output";
 import Input from "./Input";
 
+import Stats from "stats.js";
+
 export default class {
   constructor({ canvas }) {
+    this.stats = new Stats();
+    this.stats.showPanel(0);
+    document.body.appendChild(this.stats.dom);
     Input.init();
     Common.init({ canvas });
 
@@ -20,10 +25,12 @@ export default class {
   }
 
   render(t) {
+    this.stats.begin();
     requestAnimationFrame(this.render.bind(this));
     Input.render(t);
     Common.render(t);
     this.output.render(t);
+    this.stats.end();
   }
 
   resize() {

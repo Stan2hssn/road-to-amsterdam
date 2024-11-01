@@ -4,4 +4,5 @@ export default {
     height: window.innerHeight,
   },
   pixelRatio: Math.min(window.devicePixelRatio, 2),
+  cloudsResolution: 0.25,
 };
