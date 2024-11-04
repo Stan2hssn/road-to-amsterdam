@@ -2,36 +2,38 @@ import { Group } from "three";
 
 import Common from "../Common";
 
-import Floor from "./starter/Floor";
-import Cube from "./starter/Cube";
+import Lanterns from "./Lanterns/index";
+import Water from "./Water/index";
 
 export default class {
-  Starter = {};
+  Component = {};
 
   constructor() {
     this.init();
   }
 
   init() {
-    this.StarterGroup = new Group();
-
-    this.Starter.floor = new Floor();
-    this.Starter.Cube = new Cube(0, 1.2, 0);
-
-    Object.keys(this.Starter).forEach((key) => {
-      this.StarterGroup.add(this.Starter[key].mesh);
-    });
-
-    Common.scene.add(this.StarterGroup);
+    this.Component.water = new Water();
+    this.Component.Lanterns = new Lanterns();
   }
 
   dispose() {}
 
   render(t) {
-    Object.keys(this.Starter).forEach((key) => {
-      this.Starter[key].render(t);
+    Object.keys(this.Component).forEach((key) => {
+      if (typeof this.Component[key].render === "function") {
+        this.Component[key].render(t);
+      }
     });
   }
 
   resize() {}
+
+  debug(pane) {
+    Object.keys(this.Component).forEach((key) => {
+      if (typeof this.Component[key].debug === "function") {
+        this.Component[key].debug(pane);
+      }
+    });
+  }
 }

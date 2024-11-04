@@ -3,8 +3,8 @@ import Common from "../Common";
 
 export default class {
   constructor(size, divisions) {
-    size = size || 10;
-    divisions = divisions || 10;
+    this.size = size || 1000;
+    this.divisions = divisions || 100;
 
     this.init();
   }
@@ -12,10 +12,10 @@ export default class {
   init() {
     this.gridHelper = new GridHelper(this.size, this.divisions);
     this.gridHelper.traverseVisible((s) => {
-      s.material.opacity = 0.25;
+      s.material.opacity = 1;
       s.material.transparent = true;
     });
 
-    Common.scene.add(this.gridHelper);
+    Common.sceneManager.scenes.instanceScene.add(this.gridHelper);
   }
 }

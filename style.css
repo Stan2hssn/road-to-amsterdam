@@ -3,11 +3,13 @@ body {
   height: 100svh;
   margin: 0;
   padding: 0;
+  overscroll-behavior: none;
 }
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
+  background-color: black;
 }
 canvas {
   width: 100%;

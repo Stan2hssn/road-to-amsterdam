@@ -53,9 +53,6 @@ export default class {
 
   render(t) {
     this.mesh.material.uniforms.uTime.value = t / 60;
-
-    this.mesh.rotation.x = Math.sin(t / 500);
-    this.mesh.rotation.y = Math.cos(t / 500);
   }
 
   resize() {}
