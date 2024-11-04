@@ -173,7 +173,6 @@ export default class DephtOfField {
       Common.sceneManager.scenes.instanceScene,
       Common.cameraManager.cameras.instanceCamera,
     );
-
     // Update uniforms
     this.output.material.uniforms.tDiffuse.value = this.dethTarget.texture;
     this.output.material.uniforms.tDepth.value = this.dethTarget.depthTexture;
@@ -185,8 +184,14 @@ export default class DephtOfField {
     this.output.material.uniforms.height =
       Device.viewport.height * Device.pixelRatio;
 
-    this.dethTarget.setSize(width, height);
-    this.output.material.uniforms.texel.value.set(1 / width, 1 / height);
+    this.dethTarget.setSize(
+      Device.viewport.width * Device.pixelRatio,
+      Device.viewport.height * Device.pixelRatio,
+    );
+    this.output.material.uniforms.texel.value.set(
+      1 / Device.viewport.width,
+      1 / Device.viewport.height,
+    );
   }
 
   dispose() {

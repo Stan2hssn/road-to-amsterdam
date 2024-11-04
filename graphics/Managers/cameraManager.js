@@ -25,6 +25,7 @@ class CameraManager {
     this.cameras = {
       instanceCamera: null,
       mainCamera: null,
+      projectionCamera: null,
     };
   }
 
@@ -47,6 +48,9 @@ class CameraManager {
 
     // Create Orthographic Camera
     this.cameras.mainCamera = this.getOrthographicCamera();
+
+    // Create pojection Camera
+    this.cameras.projectionCamera = this.getPerspectiveCamera();
 
     // Set initial camera animation parameters
     this.setupCameraAnimation();
@@ -82,7 +86,7 @@ class CameraManager {
     camera.updateProjectionMatrix();
   }
 
-  resizeCameras() {
+  resizeCameras(aspect) {
     if (this.cameras.instanceCamera) {
       this.resizeCamera(this.cameras.instanceCamera);
     }
@@ -96,6 +100,11 @@ class CameraManager {
 
       this.cameras.mainCamera.updateProjectionMatrix();
     }
+    this.cameras.projectionCamera.position.set(0, 1.8 * aspect, 28);
+    this.cameras.projectionCamera.lookAt(0, 0, 28);
+    this.cameras.projectionCamera.aspect = 2.26;
+    this.cameras.projectionCamera.updateProjectionMatrix();
+    this.cameras.projectionCamera.updateMatrixWorld();
   }
 
   setDebug(debug) {

@@ -72,12 +72,6 @@ export default class {
       Common.sceneManager.scenes.mainScene,
       Common.cameraManager.cameras.mainCamera,
     );
-
-    Common.rendererManager.renderer.setRenderTarget(this.targets.mainRender);
-    Common.rendererManager.renderer.render(
-      Common.sceneManager.scenes.instanceScene,
-      Common.cameraManager.cameras.instanceCamera,
-    );
   }
 
   dispose() {
@@ -93,6 +87,20 @@ export default class {
     Object.keys(this.component).forEach((key) => {
       this.component[key].resize();
     });
+
+    Object.keys(this.helpers).forEach((key) => {
+      if (typeof this.helpers[key].resize === "function") {
+        this.helpers[key].resize();
+      }
+    });
+
+    if (this.postComponent) {
+      Object.keys(this.postComponent).forEach((key) => {
+        if (typeof this.postComponent[key].resize === "function") {
+          this.postComponent[key].resize();
+        }
+      });
+    }
   }
 
   debug(pane) {

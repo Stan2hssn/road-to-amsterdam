@@ -27,7 +27,13 @@ export default class {
     });
   }
 
-  resize() {}
+  resize() {
+    Object.keys(this.Component).forEach((key) => {
+      if (typeof this.Component[key].resize === "function") {
+        this.Component[key].resize();
+      }
+    });
+  }
 
   debug(pane) {
     Object.keys(this.Component).forEach((key) => {

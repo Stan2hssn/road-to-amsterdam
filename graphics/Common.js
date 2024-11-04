@@ -37,10 +37,18 @@ class Common {
   }
 
   resize() {
-    if (this.rendererManager.renderer) {
-      this.rendererManager.resizeRenderer();
-    }
-    this.cameraManager.resizeCameras();
+    const parentElement =
+      this.rendererManager.renderer.domElement.parentElement;
+    Device.viewport.width = parentElement.offsetWidth;
+    Device.viewport.height = parentElement.offsetHeight;
+    Device.pixelRatio = window.devicePixelRatio;
+
+    const aspectRatio = Device.viewport.width / Device.viewport.height;
+
+    Device.aspectRatio = aspectRatio;
+
+    this.cameraManager.resizeCameras(aspectRatio);
+    this.rendererManager.resizeRenderer(aspectRatio);
   }
 
   setDebug() {

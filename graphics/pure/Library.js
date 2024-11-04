@@ -8,6 +8,9 @@ const Library = {
       advect: imageLoader.load("/Texture/Images/Normal/advect.png"),
     },
     Diffuse: {},
+    Maps: {
+      homeScreen: imageLoader.load("/Texture/Images/Maps/homeScreen.webp"),
+    },
     BW: {},
     Helpers: {
       checkerUV: imageLoader.load("/Texture/Images/Helpers/checkerUV.jpg"),
@@ -16,5 +19,7 @@ const Library = {
   },
   Videos: {},
 };
+
+console.log("Library:", Library);
 
 export default Library;

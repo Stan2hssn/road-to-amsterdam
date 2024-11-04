@@ -154,4 +154,5 @@ void main() {
 
     gl_FragColor = vec4(col, 1.0);
     gl_FragColor = basicTexel * smoothstep(1., 0., length(vUv - .5));
+    gl_FragColor = basicTexel;
 }

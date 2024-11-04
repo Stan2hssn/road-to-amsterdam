@@ -20,10 +20,8 @@ class RendererManager {
   }
 
   resizeRenderer() {
-    Device.viewport.width = this.renderer.domElement.parentElement.offsetWidth;
-    Device.viewport.height =
-      this.renderer.domElement.parentElement.clientHeight;
     this.renderer.setSize(Device.viewport.width, Device.viewport.height);
+    this.renderer.setPixelRatio(Device.pixelRatio);
   }
 }
 

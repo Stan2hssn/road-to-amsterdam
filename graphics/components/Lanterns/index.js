@@ -150,13 +150,11 @@ export default class {
 
     if (this.mainlanternsMaterial.uniforms.uTransition.value > 0) {
       this.preClock +=
-        0.005 * this.mainlanternsMaterial.uniforms.uTransition.value;
+        0.01 * this.mainlanternsMaterial.uniforms.uTransition.value;
     }
 
     this.mainlanternsMaterial.uniforms.uTime.value = this.clock;
     this.mainlanternsMaterial.uniforms.uPreClock.value = this.preClock;
-
-    console.log("preClock", this.mainlanternsMaterial.uniforms.uPreClock);
 
     this.lanternsMaterial.uniforms.uTime.value = this.clock;
   }
