@@ -12,7 +12,7 @@ void main() {
     float noiseScale = 2.0;   // Ajustez pour changer l'échelle du bruit
     float noiseSpeed = 0.2;   // Ajustez pour changer la vitesse du bruit
 
-    vec3 trajectory = vec3(0., 2. + uPreClock, uPreClock);
+    vec3 trajectory = mix(vec3(0., 2., 0.), vec3(0., 2. + uPreClock, uPreClock), uTransition);
 
     // **Position actuelle en utilisant le bruit de Perlin**
     vec3 noisePosition = vec3(uTime * noiseSpeed, 0.0, 0.0);
@@ -42,9 +42,6 @@ void main() {
 
     // **Appliquer les rotations**
     vec3 transformedPosition = rotationZ * rotationX * position;
-
-    // transformedPosition.y += currentZ + uTime; // Ajustez la hauteur du sommet
-    // transformedPosition.y += uPreClock; // Ajustez la hauteur du sommet
 
     // **Position finale du sommet**
     vec3 finalPosition = currentPosition + transformedPosition;

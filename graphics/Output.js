@@ -21,7 +21,7 @@ export default class {
   init() {
     this.getRenderTargets();
     this.component.powers = new Powers();
-    this.helpers.grid = new GridHelper(1000, 1000);
+    // this.helpers.grid = new GridHelper(1000, 1000);
     // this.helpers.controls = new Controls();
     this.postComponent.dephtOfField = new DepthOfField(
       this.targets.dephtOfField,

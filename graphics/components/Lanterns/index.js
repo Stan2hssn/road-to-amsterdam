@@ -17,7 +17,7 @@ import Shaders from "../../pure/Shaders";
 
 export default class {
   constructor() {
-    this.count = 1000;
+    this.count = 5000;
     this.color = new Color();
     this.clock = 0;
     this.preClock = 0;
@@ -55,11 +55,13 @@ export default class {
       this.mainlanternsMaterial,
     );
 
-    this.mainLantern.position.set(0, 1, 0);
+    this.mainLantern.frustumCulled = false;
+
+    this.mainLantern.position.set(0, 2, 0);
   }
 
   initInstances() {
-    this.loopLength = 2000.0;
+    this.loopLength = 1000.0;
     this.lanternGeometry = new BoxGeometry(1, 2, 1);
 
     this.lanternsMaterial = new ShaderMaterial({
@@ -131,6 +133,7 @@ export default class {
     );
 
     this.lanterns.instanceMatrix.needsUpdate = true;
+    this.lanterns.frustumCulled = false;
 
     // Add the instanced mesh to the scene
     Common.sceneManager.scenes.instanceScene.add(this.lanterns);

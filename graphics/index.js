@@ -1,6 +1,7 @@
 import Common from "./Common";
 import Output from "./Output";
 import Input from "./Input";
+import Dom from "./DOM";
 
 import Stats from "stats.js";
 
@@ -13,6 +14,7 @@ export default class {
 
     Input.init();
     Common.init({ canvas });
+    Dom.init();
 
     this.output = new Output();
 
@@ -38,6 +40,7 @@ export default class {
     requestAnimationFrame(this.render.bind(this));
     Input.render(t);
     Common.render(t);
+    Dom.render(t);
     this.output.render(t);
     this.stats.end();
   }
@@ -45,6 +48,7 @@ export default class {
   resize() {
     Input.resize();
     Common.resize();
+    Dom.resize();
     this.output.resize();
   }
 
@@ -53,6 +57,7 @@ export default class {
 
     Input.dispose();
     Common.dispose();
+    Dom.dispose();
     this.output.dispose();
   }
 }

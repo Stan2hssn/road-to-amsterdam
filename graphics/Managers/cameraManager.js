@@ -1,7 +1,6 @@
 import { PerspectiveCamera, OrthographicCamera, Vector3 } from "three";
-
 import Device from "../pure/Device.js";
-
+import Common from "../Common.js";
 import gsap from "gsap";
 
 class CameraManager {
@@ -9,13 +8,14 @@ class CameraManager {
     this.params = params;
     this.currentPosition = new Vector3();
     this.currentLookingAt = new Vector3();
-    this.nextIndex = 0;
+    this.offset = 0;
 
     this.keyPositions = [
       { x: 0, y: 4, z: 30 },
-      { x: 0, y: 1, z: 8 },
+      { x: 0, y: 2, z: 8 },
       { x: 8, y: 1, z: 8 },
     ];
+
     this.keyLookAt = [
       { x: 0, y: 0, z: 28 },
       { x: 0, y: 1, z: 0 },
@@ -26,6 +26,7 @@ class CameraManager {
       instanceCamera: null,
       mainCamera: null,
       projectionCamera: null,
+      reflectionCamera: null,
     };
   }
 
@@ -49,8 +50,11 @@ class CameraManager {
     // Create Orthographic Camera
     this.cameras.mainCamera = this.getOrthographicCamera();
 
-    // Create pojection Camera
+    // Create projection Camera
     this.cameras.projectionCamera = this.getPerspectiveCamera();
+
+    // Create reflection Camera
+    this.cameras.reflectionCamera = this.getPerspectiveCamera();
 
     // Set initial camera animation parameters
     this.setupCameraAnimation();
@@ -68,6 +72,49 @@ class CameraManager {
       this.keyLookAt[0].y,
       this.keyLookAt[0].z,
     );
+  }
+
+  render() {
+    this.cameras.reflectionCamera.position.set(
+      this.cameras.instanceCamera.position.x,
+      -this.cameras.instanceCamera.position.y + this.offset,
+      this.cameras.instanceCamera.position.z,
+    );
+    this.cameras.reflectionCamera.lookAt(
+      this.currentLookingAt.x,
+      -this.currentLookingAt.y,
+      this.currentLookingAt.z,
+    );
+  }
+
+  animateToStep(stepIndex) {
+    if (stepIndex >= this.keyPositions.length || stepIndex < 0) return;
+
+    gsap.to(this.currentPosition, {
+      duration: 3,
+      x: this.keyPositions[stepIndex].x,
+      y: this.keyPositions[stepIndex].y,
+      z: this.keyPositions[stepIndex].z,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        if (this.cameras.instanceCamera) {
+          this.cameras.instanceCamera.position.copy(this.currentPosition);
+        }
+      },
+    });
+
+    gsap.to(this.currentLookingAt, {
+      duration: 3.2,
+      x: this.keyLookAt[stepIndex].x,
+      y: this.keyLookAt[stepIndex].y,
+      z: this.keyLookAt[stepIndex].z,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        if (this.cameras.instanceCamera) {
+          this.cameras.instanceCamera.lookAt(this.currentLookingAt);
+        }
+      },
+    });
   }
 
   resizeCamera(camera, depth = false) {
@@ -105,6 +152,9 @@ class CameraManager {
     this.cameras.projectionCamera.aspect = 2.26;
     this.cameras.projectionCamera.updateProjectionMatrix();
     this.cameras.projectionCamera.updateMatrixWorld();
+
+    this.cameras.reflectionCamera.aspect = aspect;
+    this.cameras.reflectionCamera.updateProjectionMatrix();
   }
 
   setDebug(debug) {
@@ -113,44 +163,14 @@ class CameraManager {
       return;
     }
 
+    // Set up debug bindings
     this.debug = debug;
-
-    // Ajouter un bouton de débogage pour changer la position de la caméra
-    const btn = this.debug.addButton({ title: "Etape suivante" });
-
-    btn.on("click", () => {
-      // Choisir la prochaine position (alterner entre les deux)
-      this.nextIndex = (this.nextIndex + 1) % this.keyPositions.length;
-
-      // Animer la position de la caméra avec GSAP
-      gsap.to(this.currentPosition, {
-        duration: 3,
-        x: this.keyPositions[this.nextIndex].x,
-        y: this.keyPositions[this.nextIndex].y,
-        z: this.keyPositions[this.nextIndex].z,
-        ease: "power2.inOut",
-        onUpdate: () => {
-          if (this.cameras.instanceCamera) {
-            this.cameras.instanceCamera.position.copy(this.currentPosition);
-          }
-        },
-      });
-
-      // Animer le point de focus (lookAt) de la caméra avec GSAP
-      gsap.to(this.currentLookingAt, {
-        duration: 3.2,
-        x: this.keyLookAt[this.nextIndex].x,
-        y: this.keyLookAt[this.nextIndex].y,
-        z: this.keyLookAt[this.nextIndex].z,
-        ease: "power2.inOut",
-        onUpdate: () => {
-          console.log("currentPosition", this.currentLookingAt);
-
-          if (this.cameras.instanceCamera) {
-            this.cameras.instanceCamera.lookAt(this.currentLookingAt);
-          }
-        },
-      });
+    const camFolder = this.debug.addFolder({ title: "Camera" });
+    camFolder.addBinding(this, "offset", {
+      label: "Offset",
+      min: 0,
+      max: 20,
+      step: 1,
     });
   }
 }

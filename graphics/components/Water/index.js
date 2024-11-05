@@ -5,6 +5,7 @@ import {
   ShaderMaterial,
   Uniform,
   Vector2,
+  WebGLRenderTarget,
 } from "three";
 
 import Common from "../../Common";
@@ -31,7 +32,6 @@ export default class {
   }
 
   initWater() {
-    this.initDummy();
     this.projCamera = Common.cameraManager.cameras.projectionCamera;
 
     this.waterGeometry = new PlaneGeometry(100, 100, 1, 1);
@@ -40,6 +40,7 @@ export default class {
         uTime: { value: 0 },
         uResolution: new Uniform(new Vector2()),
         tLogo: { value: Library.Images.Maps.homeScreen },
+        tReflection: { value: null },
         viewMatrixCamera: {
           type: "m4",
           value: this.projCamera.matrixWorldInverse,
@@ -57,13 +58,35 @@ export default class {
     Common.sceneManager.scenes.instanceScene.add(this.water);
   }
 
+  getRenderTargets() {
+    this.reflectionRenderTarget = new WebGLRenderTarget(
+      Device.viewport.width * Device.pixelRatio,
+      Device.viewport.height * Device.pixelRatio,
+    );
+  }
+
   init() {
+    this.getRenderTargets();
+    this.initDummy();
     this.initWater();
   }
 
   dispose() {}
 
-  render(t) {}
+  render(t) {
+    Common.rendererManager.renderer.setRenderTarget(
+      this.reflectionRenderTarget,
+    );
+    Common.rendererManager.renderer.render(
+      Common.sceneManager.scenes.instanceScene,
+      Common.cameraManager.cameras.reflectionCamera,
+    );
+
+    this.waterMaterial.uniforms.tReflection.value =
+      this.reflectionRenderTarget.texture;
+
+    Common.rendererManager.renderer.setRenderTarget(null);
+  }
 
   resize() {
     this.waterMaterial.uniforms.uResolution.value

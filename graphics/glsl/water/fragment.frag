@@ -3,7 +3,9 @@ uniform float uTime;
 uniform vec2 uResolution;
 
 uniform sampler2D tLogo;
+uniform sampler2D tReflection;
 
+varying vec2 vUv;
 varying vec4 vTexCoords;
 
 float sdSquare(vec2 p, vec2 b) {
@@ -23,13 +25,20 @@ float sdSegment(in vec2 p, in vec2 a, in vec2 b) {
 
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution.xy;
+    vec2 invUv = uv;
+    invUv.y = 1. - invUv.y;
+    invUv.y = invUv.y - 0.01;
     float aspect = uResolution.x / uResolution.y;
     float invAspect = uResolution.y / uResolution.x;
     vec2 texelUv = (vTexCoords.xy / vTexCoords.w) * 0.5 + 0.5;
+
+    vec4 reflection = texture2D(tReflection, invUv);
+
     vec4 tDiffuse = texture2D(tLogo, texelUv - vec2(0., 0.3));
 
     vec3 gradient = mix(vec3(0., 0., .0), vec3(0., 0., .2), uv.y);
-    vec3 color = gradient;
+    vec3 color = reflection.rgb * 0.7 + gradient * 0.3;
+
     color += vec3(1.) * smoothstep(0., 1., tDiffuse.a);
 
     vec2 p = vec2(.5, -.1 - (invAspect - 1.) * .5);
@@ -41,7 +50,7 @@ void main() {
     rS = smoothstep(.001, .002, rS);
     lS = smoothstep(.001, .002, lS);
 
-    float c = sdCircle(texelUv - vec2(.5, -.1 - (invAspect - 1.) * .5), .02);
+    float c = sdCircle(texelUv - vec2(.5, -.1 - (invAspect - 1.) * .5), .03);
     c = smoothstep(.0, .002, c) - smoothstep(.0, .002, c - .002);
     c = 1. - c;
 
@@ -52,5 +61,6 @@ void main() {
     gl_FragColor = vec4(texelUv, 1., 1.0);
     // gl_FragColor = vec4(vec3(1.) * smoothstep(0., 1., color.a), 1.);
     gl_FragColor = vec4(vec3(cta), 1.);
+    gl_FragColor = reflection;
     gl_FragColor = vec4(color, 1.);
 }
