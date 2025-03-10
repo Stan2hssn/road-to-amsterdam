@@ -16,24 +16,25 @@ import {
   DepthTexture,
   UnsignedShortType,
   TextureLoader,
+  SphereGeometry,
 } from "three";
 
 import Device from "../../pure/Device";
 import Common from "../../Common";
 import Input from "../../Input";
 
-import pixelsVertex from "../glsl/pixels/pixel.vert";
-import screenBlur from "../glsl/pixels/blur.frag";
+import Shaders from "../../pure/Shaders";
 
 export default class {
-  constructor() {
+  constructor(texture) {
     this.glb = null;
     this.screen = null;
     this.renderTarget = null;
     this.glbNear = -5;
-    this.glbFar = -10;
+    this.glbFar = -20;
     this.timeline = gsap.timeline({ paused: true });
     this.updateCallback = false;
+    this.texture = texture;
 
     this.t = 0;
 
@@ -79,7 +80,7 @@ export default class {
 
   setupGLBModel(glb) {
     glb.scene.scale.set(1, 1, 1);
-    glb.scene.position.set(0, 0, this.glbFar);
+    glb.scene.position.set(0, 0, this.glbNear);
     glb.scene.rotation.set(0, Math.PI, 0);
 
     glb.scene.traverse((child) => {
@@ -91,6 +92,7 @@ export default class {
     });
 
     this.glb = glb.scene;
+
     Common.pages.About.scenes.depth.add(this.glb);
   }
 
@@ -100,6 +102,7 @@ export default class {
     anchorElements.forEach((anchor) => {
       anchor.addEventListener("mouseenter", () => this.start());
       anchor.addEventListener("mouseleave", () => this.stop());
+      anchor.addEventListener("scroll", () => this.stop());
     });
   }
 
@@ -153,7 +156,7 @@ export default class {
   }
 
   render(t, forceRender = false) {
-    if (!this.updateCallback && !forceRender) return;
+    if (!this.updateCallback && !forceRender && !Device.isMobile) return;
 
     this.t += 0.04;
 
@@ -177,8 +180,8 @@ export default class {
     return new Mesh(
       new PlaneGeometry(1, 1),
       new ShaderMaterial({
-        vertexShader: pixelsVertex,
-        fragmentShader: screenBlur,
+        vertexShader: Shaders.pixels.vertex,
+        fragmentShader: Shaders.pixels.blur,
         uniforms: {
           uTime: new Uniform(100 * Math.random()),
           uResolution: new Uniform(
@@ -192,7 +195,7 @@ export default class {
           uInfoTexture: new Uniform(null),
           cameraNear: new Uniform(Common.params.depth.near),
           cameraFar: new Uniform(Common.params.depth.far),
-          tNoise: new Uniform(this.noise),
+          tNoise: new Uniform(this.texture),
           uIntensity: new Uniform(0),
         },
       }),
@@ -213,6 +216,13 @@ export default class {
       -rect.top + Device.scrollTop - rect.height * 0.5 + height * 0.5,
       -600,
     );
+
+    const glbScale = Math.min(
+      Device.viewport.width / Device.viewport.height,
+      1,
+    );
+
+    this.glb.scale.set(glbScale, glbScale, glbScale);
 
     this.screen.material.uniforms.uResolution.value
       .set(Device.viewport.width, Device.viewport.height)

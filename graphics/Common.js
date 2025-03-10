@@ -10,6 +10,9 @@ import {
   WebGLRenderer,
   Vector2,
   Group,
+  ACESFilmicToneMapping,
+  LinearDisplayP3ColorSpace,
+  OrthographicCamera,
 } from "three";
 
 class Common {
@@ -17,8 +20,8 @@ class Common {
   params = {
     sceneColor: new Color(0xe3e2e2),
     cameraFov: 52,
-    cameraNear: 0.01,
-    cameraFar: 10000.0,
+    cameraNear: 1,
+    cameraFar: 2500.0,
     depth: {
       fov: 70,
       near: 4,
@@ -27,8 +30,8 @@ class Common {
   };
 
   mousePower = new Vector2(
-    Device.viewport.width / Device.viewport.height,
-    Device.viewport.height / Device.viewport.width,
+    (Device.viewport.width / Device.viewport.height) * 2,
+    (Device.viewport.height / Device.viewport.width) * 2,
   );
 
   pages = {
@@ -66,6 +69,15 @@ class Common {
         body: new Scene(),
       },
     },
+
+    Postprocess: {
+      cameras: {
+        main: null,
+      },
+      scenes: {
+        main: new Scene(),
+      },
+    },
   };
 
   constructor() {
@@ -79,6 +91,7 @@ class Common {
     this.pages.Home.cameras.main = this.setCamera();
 
     this.setupPipeline();
+    this.setupPostProcess();
 
     this.scrollContainer = scrollContainer;
 
@@ -91,7 +104,10 @@ class Common {
     });
 
     this.renderer.physicallyCorrectLights = true;
+
     this.renderer.setPixelRatio(Device.pixelRatio);
+    this.renderer.toneMapping = ACESFilmicToneMapping;
+    this.renderer.outputColorSpace = LinearDisplayP3ColorSpace;
   }
 
   setCamera() {
@@ -125,8 +141,26 @@ class Common {
     this.pages.About.scenes.story = new Scene();
     this.pages.About.cameras.story.main = this.setCamera();
     this.pages.About.scenes.depth = new Scene();
+    this.pages.About.cameras.depth.main = new PerspectiveCamera(
+      this.params.depth.fov,
+      Device.viewport.width / Device.viewport.height,
+      this.params.depth.near,
+      this.params.depth.far,
+    );
+    this.pages.About.cameras.depth.main.userData.depth = true;
     // this.pages.About.scenes.memory = new Scene();
     this.pages.About.cameras.memory.main = this.setCamera();
+
+    this.sceneTest = new Scene();
+    this.sceneTest.background = new Color(this.params.sceneColor);
+    this.cameraTest = new PerspectiveCamera(
+      52,
+      Device.viewport.width / Device.viewport.height,
+      0.1,
+      1000,
+    );
+
+    this.cameraTest.position.set(0, 0, 5);
 
     this.pages.About.groups.main = new Group();
 
@@ -143,37 +177,63 @@ class Common {
     });
   }
 
+  setupPostProcess() {
+    this.pages.Postprocess.scenes.main = new Scene();
+    this.pages.Postprocess.cameras.main = new OrthographicCamera(
+      -1,
+      1,
+      1,
+      -1,
+      0.1,
+      10,
+    );
+
+    const scene = this.pages.Postprocess.scenes.main;
+    const camera = this.pages.Postprocess.cameras.main;
+
+    camera.position.set(0, 0, 1);
+    camera.lookAt(0, 0, 0);
+
+    scene.background = new Color(this.params.sceneColor);
+    camera.userData.depth = false;
+  }
+
   render(t) {
     if (!t) return;
 
     const { x, y } = Input.coords;
     const z = Input.camZ;
-    const scrollZ = Input.scrollZ;
     const mousePowerIn = Input.mousePowerIn;
 
-    this.cameraY =
-      Device.scrollTop - y * 30 * ((this.mousePower.y * mousePowerIn) / 5);
+    this.cameraY = Device.scrollTop - y * 30 * (this.mousePower.y / 5);
     this.newCameraZ = this.cameraZ + Input.scrollZ;
 
     this.scrollContainer.style.transform = `translate3d(0, ${Device.scrollTop}px, 0)`;
 
+    // this.cameraTest.lookAt(0, 0, 0);
+
+    this.updateCameras(x, y, z, mousePowerIn);
+  }
+
+  updateCameras(x = 0, y = 0, z = 0, mousePowerIn = 0) {
     this.pages.About.cameras.hero.main.position.set(
       this.cameraX - x * 40 * this.mousePower.x,
       -y * 60 * this.mousePower.y,
       this.newCameraZ - z * 40,
     );
+
     this.pages.About.cameras.hero.main.lookAt(0, 0, 0);
 
     this.pages.About.cameras.main.position.set(
-      this.cameraX - x * 1 * this.mousePower.x,
+      this.cameraX - x * this.mousePower.x,
       this.cameraY,
-      this.newCameraZ - z * 1,
+      this.newCameraZ - z,
     );
 
     this.pages.About.cameras.key.main.position.set(
-      this.cameraX - x * 1 * this.mousePower.x,
+      this.cameraX - x * this.mousePower.x,
       this.cameraY,
-      this.newCameraZ - z * 1,
+      this.newCameraZ - z,
     );
 
     this.pages.About.cameras.story.main.position.set(
@@ -189,7 +249,7 @@ class Common {
     this.renderer.dispose();
   }
 
-  updateCamera(camera, depth = true) {
+  resizeCamera(camera, depth = true) {
     const aspect = Device.viewport.width / Device.viewport.height;
 
     if (aspect > 1) {
@@ -207,26 +267,33 @@ class Common {
       camera.aspect = aspect;
     } else {
       camera.aspect = aspect;
-      camera.position.set(this.cameraX, 0, 0);
+      camera.position.set(0, 0, 0);
     }
 
     camera.updateProjectionMatrix();
   }
 
-  updateCameras() {
+  resizeCameras() {
     for (const pageKey in this.pages) {
       const page = this.pages[pageKey];
       for (const cameraKey in page.cameras) {
         const camera = page.cameras[cameraKey];
 
         if (camera instanceof PerspectiveCamera) {
-          this.updateCamera(camera);
+          this.resizeCamera(camera);
+        } else if (camera instanceof OrthographicCamera) {
+          camera.left = -1;
+          camera.right = 1;
+          camera.top = 1;
+          camera.bottom = -1;
+
+          camera.updateProjectionMatrix();
         } else {
           for (const key in camera) {
             if (page.cameras[cameraKey].main.userData.depth) {
-              this.updateCamera(camera[key], false);
+              this.resizeCamera(camera[key], false);
             } else {
-              this.updateCamera(camera[key]);
+              this.resizeCamera(camera[key]);
             }
           }
         }
@@ -242,7 +309,10 @@ class Common {
 
     Device.aspectRatio = Device.viewport.width / Device.viewport.height;
 
-    this.updateCameras();
+    this.cameraTest.aspect = Device.viewport.width / Device.viewport.height;
+    this.cameraTest.updateProjectionMatrix();
+
+    this.resizeCameras();
 
     this.scale = this.cameraZ / this.z;
 

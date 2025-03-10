@@ -7,10 +7,13 @@ import Stats from "stats.js";
 export default class {
   constructor({ canvas, scrollContainer }) {
     this.stats = new Stats();
-    this.stats.showPanel(0);
 
-    document.body.appendChild(this.stats.dom);
+    if (this.stats) {
+      this.stats.showPanel(0);
+      // document.body.appendChild(this.stats.dom);
+    }
     Input.init();
+
     Common.init({ canvas, scrollContainer });
 
     this.output = new Output();
@@ -19,9 +22,7 @@ export default class {
   }
 
   init() {
-    window.location.hash === "#debug"
-      ? Common.setDebug()
-      : console.log("no debug");
+    window.location.hash === "#debug" ? Common.setDebug() : null;
 
     if (Common.debug) {
       this.output.debug();
@@ -33,13 +34,17 @@ export default class {
   }
 
   render(t) {
-    this.stats.begin();
-
+    if (this.stats) {
+      this.stats.begin();
+    }
     requestAnimationFrame(this.render.bind(this));
     Input.render(t);
     Common.render(t);
     this.output.render(t);
-    this.stats.end();
+
+    if (this.stats) {
+      this.stats.end();
+    }
   }
 
   resize() {

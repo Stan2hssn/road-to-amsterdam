@@ -8,8 +8,7 @@ import {
   Vector2,
   Uniform,
   Mesh,
-  TextureLoader,
-  BoxGeometry,
+  FloatType,
 } from "three";
 
 import Common from "../Common";
@@ -20,35 +19,30 @@ import Balls from "./balls/index.js";
 import Panel from "./panel/index.js";
 import Raycaster from "./raycast/index.js";
 
-import pixelsVertex from "./glsl/pixels/pixel.vert";
-import pixelsFragment from "./glsl/pixels/pixel.frag";
-
-import backgroundGlassFragment from "./glsl/pixels/backgroundGlass.frag";
-import backgroundGlassVertex from "./glsl/pixels/backgroundGlass.vert";
-
 import Input from "../Input.js";
 import backLink from "./backLink/index.js";
 import heart from "./heart/index.js";
+import waveCursor from "./waveCursor/index.js";
+import Shaders from "../pure/Shaders.js";
+
+import Library from "../pure/TexturesLoader.js";
 
 export default class {
-  Component = {};
+  Component = {
+    waveCursor: null,
+    Content: null,
+    backLink: null,
+    Balls: null,
+    Panel: null,
+    heart: null,
+  };
   Background = {};
   Helpers = {};
   Screens = {};
   Groups = {};
 
   constructor() {
-    this.loader = new TextureLoader();
-
-    this.loadTextures();
     this.init();
-  }
-
-  loadTextures() {
-    this.textures = {
-      frostedGlass: this.loader.load("./Texture/Maps/frostedGlass.jpg"),
-      noiseTexture: this.loader.load("./Texture/Maps/noise_light.jpg"),
-    };
   }
 
   init() {
@@ -57,21 +51,26 @@ export default class {
     this.Screens.hero = this.createScreen("hero");
     this.Screens.key = this.createScreen("key", true);
     this.Screens.story = this.createScreen("story");
-    // this.Screens.memory = this.createScreen("memory");
+    // this.Screens.memory = this.createScreen("heart");
 
     this.setBackgroundGlass();
 
-    // this.Helpers.raycaster = new Raycaster();
+    this.Helpers.raycaster = new Raycaster();
 
+    this.Component.waveCursor = new waveCursor(this.targets.waveCursor);
     this.Component.Panel = new Panel();
 
-    this.Component.backLink = new backLink();
+    this.Component.backLink = !Device.isMobile
+      ? new backLink(Library.Images.Normal.frostedGlass)
+      : null;
     this.Component.Content = new Content();
     this.Component.Balls = new Balls();
     this.Component.heart = new heart(
       this.targets.memory.backSide,
       this.targets.memory.frontSide,
+      this.targets.waveCursor,
     );
+
     this.addObjects();
   }
 
@@ -85,8 +84,8 @@ export default class {
     this.Background.glass = new Mesh(
       new PlaneGeometry(2, 2),
       new ShaderMaterial({
-        vertexShader: backgroundGlassVertex,
-        fragmentShader: backgroundGlassFragment,
+        vertexShader: Shaders.pixels.backgroundGlass.vertex,
+        fragmentShader: Shaders.pixels.backgroundGlass.fragment,
         uniforms: {
           uTime: new Uniform(0),
           uResolution: new Uniform(
@@ -96,8 +95,8 @@ export default class {
             ).multiplyScalar(Device.pixelRatio),
           ),
           uTexture: new Uniform(null),
-          frostedGlass: new Uniform(this.textures.frostedGlass),
-          noiseTexture: new Uniform(this.textures.noiseTexture),
+          frostedGlass: new Uniform(Library.Images.Normal.frostedGlass),
+          noiseTexture: new Uniform(Library.Images.Procedural.noiseLight),
           uShift: new Uniform(0),
           uCoords: new Uniform(Input.coords),
           uBackground: new Uniform(Common.params.sceneColor),
@@ -131,6 +130,10 @@ export default class {
         backSide: this.getRenderTarget(),
         frontSide: this.getRenderTarget(),
       },
+      waveCursor: new WebGLRenderTarget(512, 512, {
+        type: FloatType,
+        internalFormat: "RGBA16F",
+      }),
     };
   }
 
@@ -144,8 +147,8 @@ export default class {
     const mesh = new Mesh(
       new PlaneGeometry(1, 1),
       new ShaderMaterial({
-        vertexShader: pixelsVertex,
-        fragmentShader: pixelsFragment,
+        vertexShader: Shaders.pixels.vertex,
+        fragmentShader: Shaders.pixels.fragment,
         uniforms: {
           uTime: new Uniform(0),
           uResolution: new Uniform(
@@ -218,12 +221,13 @@ export default class {
   }
 
   renderStory(t) {
+    this.Component.waveCursor.render(t);
+    this.Component.heart.render(t);
     Common.renderer.setRenderTarget(this.targets.about.story);
     Common.renderer.render(
       Common.pages.About.scenes.story,
       Common.pages.About.cameras.story.main,
     );
-
     this.Screens.story.material.uniforms.uTexture.value =
       this.targets.about.story.texture;
   }
@@ -241,8 +245,10 @@ export default class {
 
   render(t) {
     Object.keys(this.Component).forEach((key) => {
-      if (typeof this.Component[key].render === "function") {
-        this.Component[key].render(t);
+      if (this.Component[key] !== null) {
+        if (typeof this.Component[key].render === "function") {
+          this.Component[key].render(t);
+        }
       }
     });
 
@@ -265,21 +271,25 @@ export default class {
       Common.pages.About.cameras.main,
     );
 
-    Common.renderer.render(
-      Common.pages.About.scenes.story,
-      Common.pages.About.cameras.story.main,
-    );
+    // Common.renderer.render(
+    //   Common.pages.About.scenes.story,
+    //   Common.pages.About.cameras.story.main,
+    // );
+
+    // Common.renderer.render(Common.sceneTest, Common.cameraTest);
 
     // Common.renderer.render(
-    //   Common.pages.About.scenes.depth,
-    //   Common.pages.About.cameras.depth.main,
+    //   Common.pages.Postprocess.scenes.main,
+    //   Common.pages.Postprocess.cameras.main,
     // );
   }
 
   resize(scale, height, width) {
     Object.keys(this.Component).forEach((key) => {
-      if (typeof this.Component[key].resize === "function") {
-        this.Component[key].resize(scale, height, width);
+      if (this.Component[key] !== null) {
+        if (typeof this.Component[key].resize === "function") {
+          this.Component[key].resize(scale, height, width);
+        }
       }
     });
 
@@ -301,6 +311,8 @@ export default class {
 
     Object.keys(this.Screens).forEach((key) => {
       const target = this.Screens[key].userData.class;
+
+      console.log("target", target);
 
       const rect = document.querySelector(target).getBoundingClientRect();
 
@@ -332,8 +344,11 @@ export default class {
 
   debug(pane) {
     Object.keys(this.Component).forEach((key) => {
-      if (typeof this.Component[key].debug === "function") {
-        this.Component[key].debug(pane);
+      if (this.Component[key] !== null) {
+        if (typeof this.Component[key].setDebug === "function") {
+          this.Component[key].setDebug(pane);
+          console.log("this.Component[key]", this.Component[key]);
+        }
       }
     });
   }

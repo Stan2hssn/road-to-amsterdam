@@ -3,7 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default class {
   constructor() {
-    this.camera = Common.pages.About.cameras.story.main;
+    this.camera = Common.cameraTest;
     this.renderer = Common.renderer;
     this.init();
   }
@@ -14,7 +14,7 @@ export default class {
 
   render() {
     this.controls.update();
-    // console.log("Controls render", this.controls);
+    // console.log("Controls render", this.controls.position0);
   }
 
   dispose() {

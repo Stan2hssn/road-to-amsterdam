@@ -7,9 +7,12 @@ export default {
   scrollTop: 0,
   aspectRatio: 0,
   scrollHeight: 0,
+  containerHeight: 0,
   isMobile:
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent,
     ),
+
+  isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
   isHovering: false,
 };

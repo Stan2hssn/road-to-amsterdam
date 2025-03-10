@@ -222,10 +222,11 @@ canvas {
 .story .heart {
   display: flex;
   box-sizing: content-box;
-  width: 40%;
+  width: 30%;
   height: auto;
   aspect-ratio: 1/1;
   padding: 40vw 0rem;
+  margin-top: 20vw;
   margin: auto;
 
   /* background-color: #236a88; */
@@ -361,6 +362,7 @@ a {
   font-family: "Satoshi Variable", sans-serif;
   white-space: nowrap;
   color: var(--blueSecondary);
+  z-index: 10;
 }
 
 h1,

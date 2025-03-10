@@ -9,8 +9,10 @@ import {
   Vector3,
 } from "three";
 
-import vertexShader from ".././glsl/balls/balls.vert";
-import fragmentShader from ".././glsl/balls/balls.frag";
+// import Shaders.Shaders.ballsVertex from ".././glsl/balls/balls.vert";
+// import Shaders.Shaders.ballsFragment from ".././glsl/balls/balls.frag";
+
+import Shaders from "../../pure/Shaders";
 
 import Common from "../../Common";
 import Device from "../../pure/Device";
@@ -87,8 +89,8 @@ export default class {
         uDiffuseness: new Uniform(this.params.uDiffuseness),
         uLight: new Uniform(this.params.uLight),
       },
-      vertexShader,
-      fragmentShader,
+      vertexShader: Shaders.balls.vertex,
+      fragmentShader: Shaders.balls.fragment,
       transparent: true,
     });
 

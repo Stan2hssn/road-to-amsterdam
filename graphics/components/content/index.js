@@ -285,9 +285,15 @@ export default class {
 
   render(t) {
     const { x, y } = Input.coords;
+    const mousePowerIn = Input.mousePowerIn;
+
+    const transform = {
+      x: x * 0.5 * Common.mousePower.x,
+      y: y * 6 * Common.mousePower.y,
+    };
 
     this.linkElements.forEach((link) => {
-      link.style.transform = `translate3d(${x * 1 * Common.mousePower.x}px, ${-y * 30 * Common.mousePower.y}px, 0)`;
+      link.style.transform = `translate3d(${transform.x}px, ${-transform.y}px, 0)`;
     });
     // this.resize(Common.scale, Device.viewport.height, Device.viewport.width);
   }

@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./styles/reset.css" />
@@ -11,9 +12,9 @@
   </head>
   <body>
     <div id="app">
-      <div class="back_link"></div>
       <canvas id="web_gl"></canvas>
-
+      
+      <div class="back_link"></div>
       <div class="scroll-container">
         <section class="hero">
           <h6 class="content">ABOUT Stan HUSSON</h6>
@@ -194,7 +195,7 @@
         </section>
       </div>
     </div>
-    <video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
+    <video id="memory" loop crossOrigin="anonymous" playsinline style="display:none">
 			<source src="Texture/Videos/memory.webm" type='video/webm'>
 		</video>
     <script type="module" src="./graphics/main.js"></script>

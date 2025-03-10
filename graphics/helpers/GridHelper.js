@@ -12,10 +12,11 @@ export default class {
   init() {
     this.gridHelper = new GridHelper(this.size, this.divisions);
     this.gridHelper.traverseVisible((s) => {
-      s.material.opacity = 0.25;
+      s.material.opacity = 1;
       s.material.transparent = true;
     });
 
-    Common.scene.add(this.gridHelper);
+    this.gridHelper.position.set(0, -1, 0);
+    // Common.pages.About.scenes.depth.add(this.gridHelper);
   }
 }

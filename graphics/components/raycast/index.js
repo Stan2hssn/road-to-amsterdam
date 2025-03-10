@@ -15,9 +15,7 @@ export default class {
     this.init();
   }
 
-  init() {
-    console.log("this.interactivesObjects", this.interactivesObjects);
-  }
+  init() {}
 
   dispose() {}
 
